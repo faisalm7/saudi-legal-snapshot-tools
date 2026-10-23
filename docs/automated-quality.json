@@ -1,26 +1,36 @@
 {
-  "schema_version": "0.3.0",
-  "historical_processing_evidence_version": "0.2.0",
-  "scope": "private_BOE_capture_processing_aggregate",
-  "source_json_files": 468,
-  "source_pdf_files": 468,
-  "parsed_records": 468,
-  "unique_source_ids": 468,
-  "unique_exact_texts": 468,
-  "captured_text_hashes_verified": 468,
-  "article_heading_sequences_aligned": 350,
-  "exact_dom_article_span_rows": 9305,
-  "structure_deferred": {
-    "no_isolated_pdf_headings": 59,
-    "ambiguous_or_mismatched_sequence": 57,
-    "empty_article_body": 2
+  "schema_version": "0.4.0",
+  "scope": "selected_release_structure_and_review_aggregate_not_an_accuracy_certificate",
+  "selected_publication_records": 1010,
+  "configuration_rows": {
+    "laws": 76,
+    "judgments": 480,
+    "article_spans": 4505,
+    "source_sections": 1605,
+    "boe_documents": 454,
+    "boe_article_spans": 9091
   },
-  "source_rights_basis_non_null": 0,
-  "public_legal_text_records_eligible": 0,
-  "public_source_catalogue_rows": 468,
-  "public_source_catalogue_contains_legal_bodies": false,
+  "boe_selected_with_verified_structure": 343,
+  "boe_selected_body_only": 111,
+  "boe_material_quality_deferrals": 14,
+  "court_complete_source_body_components": 481,
+  "court_current_privacy_deferrals": 30,
+  "court_duplicate_alias_bodies_excluded": 3,
   "legal_completeness_verified": false,
   "human_or_legal_expert_review_claimed": false,
+  "full_court_inventory_content_processing_complete_claimed": false,
+  "historical_v02_processing_baseline": {
+    "source_json_files": 468,
+    "source_pdf_files": 468,
+    "parsed_records": 468,
+    "article_heading_sequences_aligned": 350,
+    "exact_dom_article_span_rows": 9305,
+    "structure_deferred": {
+      "no_isolated_pdf_headings": 59,
+      "ambiguous_or_mismatched_sequence": 57,
+      "empty_article_body": 2
+    }
+  },
   "limitations": [
     "Preserved DOM may omit list numbering, list items, illustrations or annex content.",
     "Article-offset integrity does not establish completeness or legal validity.",

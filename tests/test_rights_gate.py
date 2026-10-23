@@ -43,7 +43,7 @@ def write_inputs(tmp_path, records, decisions):
 
 
 def test_private_processing_does_not_grant_rights(synthetic_records):
-    assert core.VERSION == "0.3.0"
+    assert core.VERSION == "0.4.0"
     assert core.RIGHTS is None
     assert all(row["rights_basis"] is None for row in synthetic_records)
 

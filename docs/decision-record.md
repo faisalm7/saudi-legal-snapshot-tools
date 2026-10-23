@@ -1,17 +1,13 @@
-# v0.3 scope and architecture
+# Architecture and release decisions · v0.4.0
 
-The release separates reusable tools, an original factual source catalogue and actual source text. The catalogue describes 468 August 2025 BOE captures through an explicit metadata projection; it contains no legal bodies, article text, PDF extracts or case facts. No examined legal-text subset has passed the current combined publication review. This temporary text hold does not assert that official texts are categorically copyrighted or prohibited.
+The public package separates source capture/adapters, faithful text plus independent search normalization, optional evidence-backed structure, contextual review and a hash-bound publication projection. Saved BOE captures or saved official MOJ responses enter locally. MOJ instruments preserve their native hierarchy; courts preserve every populated judgment/appeal body field; BOE headings map only through unique ordered PDF evidence. A final allowlist/gate binds body, metadata and structure to reviewed decisions before writing a new Parquet destination. It does not fetch, interpret, redact or publish on the user's behalf.
 
-The local flow is: independently acquired page text → hash-bound capture JSON → validated body and optional PDF heading evidence → exact captured-text article spans → private records/Parquet. Existing compatible capture JSON can enter directly. A separate `catalogue` projection emits allowed metadata. A substantiated hash-specific rights/quality/privacy registry is required before `prepare-public` can select actual text for a different candidate.
-
-The historical private run processed all 468 BOE JSON/PDF pairs. It produced 468 document records, 350 uniquely aligned heading sequences and 9,305 spans; structure remains deferred for 118. Catalogue diagnostics describe those processing outcomes without supplying the private evidence needed to rerun them. Source summaries, source bodies, case facts and unknown-origin third-party materials are outside the public release.
-
-## Three tradeoffs
-
-| Choice | Practical benefit | Material limit |
+| Choice | Benefit | Limit/tradeoff |
 | --- | --- | --- |
-| Preserve captured body; store search normalization separately | Legal characters, numbers and negations remain auditable against their captured source | Broken spacing, missing list numbering and omitted capture content can remain; source preservation does not certify a complete law |
-| Require isolated PDF headings and a unique ordered DOM mapping | Article rows have exact source offsets and source-evidence hashes | Ambiguous, absent or empty mappings yield no table; PDF evidence does not by itself verify every article's substance or attachments |
-| Publish a whitelisted source catalogue separately from private bodies and supported text selection | Source discovery and reproducible metadata export can be useful while text eligibility is unresolved | Catalogue facts and diagnostics cannot reconstruct the historical body, establish its completeness or grant permission to reuse it |
+| Preserve the declared source representation; normalize search separately | Numbers, negations, source masks and text hashes remain inspectable | Source typography, upstream capture omissions and source inconsistencies can remain; faithful DOM is not necessarily complete law |
+| Use native MOJ units or unique PDF-evidenced BOE offsets; defer ambiguity | Reconstructable hierarchy and exact source slices |111 selected BOE bodies have no verified article table; article tables overlap parent bodies and must not be counted as more documents |
+| Require separate rights, fidelity, privacy and projection bindings | Narrow, reviewable inclusion and explicit source-version differences | The registry validates evidence fields, not their truth; current refetches and hidden private acquisition steps cannot reproduce every historical version |
 
-Implementation and review were AI assisted. The tools make no claim to source-document authorship, government affiliation, legal interpretation or expert-validated retrieval performance. Exact historical reproduction requires the private capture inputs and compatible extraction dependencies; invented fixtures reproduce software behavior independently. Current website content is not assumed equivalent to the 2025 captures.
+The release adds selected actual source text and reviewed structure to the earlier tools/catalogue work. The original 468-row factual catalogue remains separate and retains its own narrow CC0 scope. Legal-text source bases and custom conditions do not become MIT merely because the exporter is MIT.
+
+Development, tests and source/context reviews were AI assisted, including a separate agent's court review and independent final artifact review. This is not a claim of human/legal-expert certification, government affiliation, model retrieval performance or source-document authorship. Original source files and earlier frozen releases were preserved. [Reproduction limits](reproducibility.md) and [comparison evidence](comparison.md) constrain the contribution claim.

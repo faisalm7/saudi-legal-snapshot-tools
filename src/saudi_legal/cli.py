@@ -169,6 +169,22 @@ def main():
     p = sub.add_parser("capture-text")
     p.add_argument("--text-file",required=True);p.add_argument("--title",required=True);p.add_argument("--source-url",required=True)
     p.add_argument("--captured-at",required=True);p.add_argument("--output",required=True);p.add_argument("--body-only",action="store_true")
+    p = sub.add_parser("refine-capture")
+    p.add_argument("--records",required=True);p.add_argument("--audit",required=True);p.add_argument("--pdf-text-folder",required=True)
+    p.add_argument("--reviews",required=True);p.add_argument("--output",required=True)
+    p = sub.add_parser("capture-moj-supreme")
+    p.add_argument("--response-file",required=True);p.add_argument("--source-url",required=True)
+    p.add_argument("--captured-at",required=True);p.add_argument("--output",required=True)
+    p = sub.add_parser("capture-moj-legislation")
+    p.add_argument("--response-file",required=True);p.add_argument("--source-url",required=True)
+    p.add_argument("--captured-at",required=True);p.add_argument("--output",required=True)
+    p = sub.add_parser("capture-moj-case")
+    p.add_argument("--response-file",required=True);p.add_argument("--source-url",required=True)
+    p.add_argument("--captured-at",required=True);p.add_argument("--output",required=True)
+    p = sub.add_parser("prepare-text-release",aliases=["prepare-moj-text"])
+    p.add_argument("--laws");p.add_argument("--spans");p.add_argument("--judgments")
+    p.add_argument("--boe");p.add_argument("--boe-spans")
+    p.add_argument("--decisions",required=True);p.add_argument("--output",required=True)
     p = sub.add_parser("_inspect"); p.add_argument("path")
     args = parser.parse_args()
     if args.cmd == "_inspect":
@@ -191,6 +207,21 @@ def main():
     elif args.cmd == "prepare-public":
         from .rights_gate import prepare_public
         print(json.dumps(prepare_public(args.records,args.decisions,args.output),ensure_ascii=False,indent=2))
+    elif args.cmd == "refine-capture":
+        from .refine import refine_capture
+        print(json.dumps(refine_capture(args.records,args.audit,args.pdf_text_folder,args.reviews,args.output),ensure_ascii=False,indent=2))
+    elif args.cmd == "capture-moj-supreme":
+        from .moj import capture_supreme
+        print(json.dumps(capture_supreme(args.response_file,args.source_url,args.captured_at,args.output),ensure_ascii=False,indent=2))
+    elif args.cmd == "capture-moj-legislation":
+        from .moj_legislation import capture_legislation
+        print(json.dumps(capture_legislation(args.response_file,args.source_url,args.captured_at,args.output),ensure_ascii=False,indent=2))
+    elif args.cmd == "capture-moj-case":
+        from .moj import capture_case
+        print(json.dumps(capture_case(args.response_file,args.source_url,args.captured_at,args.output),ensure_ascii=False,indent=2))
+    elif args.cmd in ("prepare-moj-text","prepare-text-release"):
+        from .text_release import prepare_moj_text
+        print(json.dumps(prepare_moj_text(args.laws,args.spans,args.judgments,args.decisions,args.output,args.boe,args.boe_spans),ensure_ascii=False,indent=2))
     else:
         print(json.dumps(verify(args.output), indent=2))
 

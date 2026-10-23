@@ -61,8 +61,19 @@ def pdf_headings(pdf_text):
     return result
 
 
-def segment_with_pdf_evidence(record, pdf_text, pdf_sha256):
+def segment_with_pdf_evidence(record, pdf_text, pdf_sha256, excluded_pdf_headings=None):
     headings=pdf_headings(pdf_text)
+    excluded=[]
+    if excluded_pdf_headings:
+        # Explicit, hash-bound review is supplied by the refinement command.
+        # Never infer that a terminal full stop makes a heading a citation.
+        for decision in excluded_pdf_headings:
+            matches=[h for h in headings if h['page']==decision.get('page') and h['line']==decision.get('line')
+                     and h['heading_pdf_raw']==decision.get('heading_pdf_raw')]
+            if len(matches)!=1 or matches[0] in excluded:
+                raise ValueError('Reviewed PDF heading exclusion does not match exactly once')
+            excluded.extend(matches)
+        headings=[h for h in headings if h not in excluded]
     allowed_keys={h['key'] for h in headings}
     text=record["text_ar"]
     candidates=[]
@@ -71,6 +82,8 @@ def segment_with_pdf_evidence(record, pdf_text, pdf_sha256):
         if prefix:
             candidates.append({"start":m.start(),"end":m.start()+len(prefix),"heading_raw":prefix,"key":heading_key(prefix)})
     evidence={"document_id":record["document_id"],"pdf_sha256":pdf_sha256,"pdf_heading_count":len(headings),"dom_heading_candidate_count":len(candidates),"method":"exact_ordered_heading_key_alignment_v1","alignment_key_only":"NFKC,diacritic/tatweel/bidi/space/punctuation/alef removal; body unchanged"}
+    if excluded:
+        evidence.update(method='exact_ordered_heading_key_alignment_reviewed_exclusions_v2',reviewed_excluded_pdf_headings=excluded)
     if not headings:
         return [],{**evidence,"status":"deferred_no_isolated_pdf_headings"}
     # Count full ordered alignments, capped at two. Preamble citations can be

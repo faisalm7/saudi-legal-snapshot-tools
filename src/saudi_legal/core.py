@@ -5,7 +5,7 @@ import re
 import unicodedata
 from urllib.parse import urlparse
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 MARKER = "ن ص النظ ام"
 URL = re.compile(r"^/BoeLaws/Laws/LawDetails/([0-9a-fA-F-]{36})/1/?$")
 # Processing eligibility is independent of publication permission. Only a reviewed

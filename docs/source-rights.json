@@ -1,49 +1,21 @@
 {
-  "schema_version": "0.3.0",
+  "schema_version": "0.4.0",
   "review_date": "2026-10-23",
-  "report_type": "aggregate_publication_status_not_a_hash_specific_decision_registry",
-  "public_legal_text_records_eligible": 0,
-  "public_source_catalogue_rows": 468,
-  "public_source_catalogue_license": "CC0-1.0",
-  "catalogue_license_scope": "publisher_original_compilation_and_analytic_contributions_only_not_underlying_source_content",
-  "corpus_text_upload_allowed": false,
-  "underlying_content_license_granted": false,
-  "new_code_documentation_and_invented_fixtures_license": "MIT",
-  "source_rights_inferred_from_processing": false,
-  "sources": {
-    "boe": {
-      "decision": "withhold_text",
-      "unresolved": [
-        "present_circulation_rule_and_transition",
-        "personal_use_terms_applicability"
-      ]
-    },
-    "moj_judgments": {
-      "decision": "withhold_examined_copies",
-      "positive_lead": "applicable_MOJ_open_data_policy_or_source_wide_license",
-      "unresolved": [
-        "record_or_source_wide_grant_scope",
-        "faithful_processing_terms",
-        "quality_and_privacy"
-      ]
-    },
-    "moj_legislation": {
-      "decision": "withhold_examined_copies",
-      "unresolved": [
-        "originating_publication_and_version",
-        "applicable_source_terms"
-      ]
-    },
-    "sama_rulebook": {
-      "decision": "withhold_examined_copies",
-      "unresolved": [
-        "compatible_applicable_grant_or_separately_cleared_equivalent_source"
-      ]
-    },
-    "hadith_aaoifi_commentary": {
-      "decision": "excluded_from_this_delivery"
-    }
+  "report_type": "aggregate_status_not_a_record_level_rights_registry",
+  "selected_source_publication_records": 1010,
+  "selected_counts": {
+    "boe": 454,
+    "moj_instruments": 76,
+    "court_publications": 480
   },
-  "interpretation": "A source-specific temporary publication hold, not a blanket conclusion that official documents are copyrighted or require an individual license in every case.",
-  "gate_example": "rights-decisions.example.json"
+  "code_documentation_invented_fixtures": "MIT",
+  "actual_source_text": "source_specific_statutory_exclusion_and_MOJ_policy_conditions_not_MIT_or_CC0",
+  "boe_basis": "affirmative_adequately_supported_current_official_document_public_domain_route",
+  "earlier_automatic_BOE_hold_withdrawn": true,
+  "formal_repeal_of_every_older_circulation_clause_certified": false,
+  "moj_basis": "applicable_sourcewide_open_data_policy_and_official_document_statutory_exclusion",
+  "quality_privacy_and_version_reviews_separate": true,
+  "local_privacy_redactions_added": 0,
+  "original_PDFs_or_synthetic_fixtures_in_text_dataset": false,
+  "underlying_source_license_granted_by_tools_publisher": false
 }

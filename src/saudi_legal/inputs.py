@@ -6,10 +6,8 @@ import stat
 from .core import MARKER,canonical,make_record,sha256
 
 
-def capture_text(text_file,title,source_url,captured_at,output,body_only=False):
-    source,out=Path(text_file),Path(output)
-    if out.exists() or out.is_symlink():
-        raise ValueError('Output must be a new JSON file; existing work is preserved')
+def read_utf8_input(text_file):
+    source=Path(text_file)
     if not stat.S_ISREG(source.stat().st_mode):
         raise ValueError('Input must be a regular UTF-8 file')
     limit=32*1024*1024
@@ -23,6 +21,15 @@ def capture_text(text_file,title,source_url,captured_at,output,body_only=False):
         acquired=f.read(limit+1)
     if len(acquired)>limit:
         raise ValueError('Input exceeds 32 MiB; use bounded source captures')
+    acquired.decode('utf-8')  # Reject invalid UTF-8 without rewriting acquired bytes.
+    return acquired
+
+
+def capture_text(text_file,title,source_url,captured_at,output,body_only=False):
+    out=Path(output)
+    if out.exists() or out.is_symlink():
+        raise ValueError('Output must be a new JSON file; existing work is preserved')
+    acquired=read_utf8_input(text_file)
     raw=acquired.decode('utf-8')
     text=MARKER+'\n'+raw if body_only else raw
     data={'title':title,'status':None,'full_text':text,
