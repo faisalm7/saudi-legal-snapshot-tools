@@ -231,7 +231,7 @@ def prepare_moj_text(laws_path,spans_path,judgments_path,decisions_path,output,b
             inventory.append({"path":target.name,"rows":len(table),"bytes":target.stat().st_size,"sha256":sha256(target.read_bytes())})
         configs.append({"config_name":config,"data_files":[{"split":"corpus","path":f"{config}-*.parquet"}]})
     configs[0]["default"]=True
-    card={"language":["ar"],"license":"other","license_name":"saudi-official-text-source-terms","license_link":"RIGHTS.md","configs":configs}
+    card={"language":["ar"],"license":"other","license_name":"saudi-official-text-source-terms","license_link":"https://github.com/faisalm7/saudi-legal-snapshot-tools/blob/main/docs/source-rights.md","configs":configs}
     (output/"README.md").write_text("---\n"+yaml.safe_dump(card,allow_unicode=True,sort_keys=False)+"---\n# Reviewed MOJ text candidate\n\nAdd the source-specific rights, quality and reproduction documentation before publishing.\n")
     summary={"configuration_rows":{k:len(v) for k,v in groups.items() if v},"documents":len(supported),
              "empty_structural_units_omitted_from_rows":empty,"punctuation_only_structural_units_omitted_from_rows":placeholders,
