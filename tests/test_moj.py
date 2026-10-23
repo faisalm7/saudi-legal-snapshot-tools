@@ -84,3 +84,29 @@ def test_worked_example_only_opens_identity_matched_official_citations():
     assert not validate({'source_url':'https://example.org/unreviewed','source_id':None})
     assert validate({'source_url':URL.replace('/3/','/0/'),'source_id':'00000000-0000-4000-8000-000000000002','opaque_route_id':URL.rsplit('/',1)[1]})
     assert not validate({'source_url':URL,'source_id':'00000000-0000-4000-8000-000000000002','opaque_route_id':'OTHER'})
+
+
+def test_appeal_only_does_not_promote_inactive_judgment_metadata(response):
+    model=response['model'];model.update(hasJudgment=False,hasAppeal=True,title='--',
+        judgmentTextofRulling=None,judgmentNumber='STALE',judgmentHijriiDate='1444-01-01',
+        appealTextofRulling='<p>مثال استئناف اصطناعي؛ لا تغيير.</p>',
+        appealNumber='SYNTHETIC_APPEAL',appealCourtName='محكمة اصطناعية',appealHijriiDate='1444-02-03')
+    record=decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+    assert record['title'] is None
+    assert all(record[k] is None for k in ('judgment_number','judgment_hijri_date_raw','judgment_gregorian_date_raw','court_name','city'))
+    assert record['appeal_number']=='SYNTHETIC_APPEAL' and record['appeal_hijri_date_raw']=='1444-02-03'
+    assert record['text_ar']=='مثال استئناف اصطناعي؛ لا تغيير.'
+    assert set(record['quality_flags'])=={'publisher_title_placeholder_retained_as_null','inactive_component_metadata_not_promoted'}
+    assert json.loads(record['source_components_json'])[0]['number']=='SYNTHETIC_APPEAL'
+
+
+def test_transparent_observed_span_preserves_all_words_numbers_negations(response):
+    body='<p><span style="vertical-align: inherit;">مثال اصطناعي: لا يجوز </span><span style="vertical-align: inherit;">حذف 12 أو 1444/01/02.</span></p>'
+    response['model']['judgmentTextofRulling']=body
+    r=decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+    assert r['text_ar']=='مثال اصطناعي: لا يجوز حذف 12 أو 1444/01/02.'
+    assert r['source_body_html_sha256']==sha256(body.encode())
+    assert 'transparent_inline_vertical_align_span_removed' in r['quality_flags']
+    response['model']['judgmentTextofRulling']='<p><span data-source-note="substantive">نص</span></p>'
+    with pytest.raises(ValueError,match='span attributes'):
+        decode_case_response(json.dumps(response).encode(),URL,TIME)

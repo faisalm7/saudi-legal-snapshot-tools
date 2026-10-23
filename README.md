@@ -1,15 +1,15 @@
 # Saudi legal snapshot tools · v0.4.0
 
-Load and inspect source-traceable Arabic legal text from the [Saudi legal text snapshots dataset](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots). The release contains **1,010 source publication records**: 454 BOE bodies, 76 MOJ legislative/instrument publications and 480 court publications. Article and section tables are separate. These are selected captured versions, with overlap between sources; the total is not a count of unique laws or cases or a complete/current statement of Saudi law.
+Load and inspect source-traceable Arabic legal text from the [Saudi legal text snapshots dataset](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots). The release contains **1,451 source publication records**: 457 BOE bodies, 76 MOJ legislative/instrument publications and 918 court publications. Article and section tables are separate. These are selected captured versions, with overlap between sources; the total is not a count of unique laws or cases or a complete/current statement of Saudi law.
 
 | Dataset configuration · split `corpus` | Rows | Meaning |
 | --- | ---: | --- |
-| `boe_documents` | 454 | Selected historical BOE bodies, including one documented source-backed completion |
-| `boe_article_spans` | 9,091 | Exact source-evidenced slices in 343 BOE bodies; 111 bodies have no verified article table |
+| `boe_documents` | 457 | Selected historical BOE bodies; four parents have documented source-backed completions |
+| `boe_article_spans` | 9,150 | Exact source-evidenced slices in 346 BOE bodies; 111 bodies have no verified article table |
 | `laws` | 76 | Current MOJ legislative/instrument publication records; not all are statutes |
 | `article_spans` | 4,505 | Explicit MOJ source article units |
 | `source_sections` | 1,605 | Useful other MOJ source units, including enactment/structural content |
-| `judgments` | 480 | Reviewed court publication records containing 481 complete judgment/appeal body components |
+| `judgments` | 918 | Reviewed court publication records containing 920 populated source body components |
 
 ## Load and inspect real text
 
@@ -47,7 +47,7 @@ The CLI operates on files you already acquired; it does not scrape or publish:
 
 ## Quality, rights and development
 
-BOE captures can omit rendered numbering or flatten tables. Fourteen materially incomplete bodies were withheld; remaining limitations are flagged. One education-authority Article 6 completion uses a separately dated official image and explicit correction provenance, rather than pretending the completion was in the original capture. Court contexts were reviewed individually; 30 current records remain private and three duplicate aliases supply relations without duplicate bodies. Publisher masks are preserved; this is not an anonymity certificate. See [quality](docs/quality.md), [court review](docs/court-audit.md) and [comparison](docs/comparison.md).
+BOE captures can omit rendered numbering or flatten tables. Eleven materially incomplete bodies are withheld; remaining limitations are flagged. Four original-base instruments have five separately dated official-image passage completions with explicit version/correction provenance. Court contexts were reviewed individually; 71 reviewed current source versions remain private and six duplicate aliases supply body-free relations. All 38,011 original court-family files were byte/native/JSON processed; most are not contextually cleared for publication. A source body component is a publisher field or PDF body, not necessarily one semantic judgment. Publisher masks are preserved; this is not an anonymity certificate. See [quality](docs/quality.md), [court review](docs/court-audit.md) and [comparison](docs/comparison.md).
 
 MIT covers new code, documentation and invented test fixtures. Actual official text uses the [source-specific statutory/policy basis and conditions](docs/source-rights.md), also recorded in the dataset's `RIGHTS.md`; it is not relicensed under MIT or the catalogue's CC0 dedication. No synthetic fixture or original PDF is included in the text dataset.
 

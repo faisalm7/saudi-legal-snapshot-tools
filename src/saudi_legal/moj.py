@@ -82,10 +82,24 @@ def capture_supreme(response_file,source_url,captured_at,output):
             'text_sha256':record['text_sha256'],'publication_permission_inferred':False,'source_fetched':False}
 
 
+
+class CaseFormatting(HTMLParser):
+    """Recognize only observed inline formatting with no substantive attributes."""
+    def handle_starttag(self,tag,attrs):
+        if tag not in ('p','br','span'):
+            raise ValueError('Additional body markup needs separate handling')
+        if tag=='span' and attrs!=[('style','vertical-align: inherit;')]:
+            raise ValueError('Additional span attributes need separate handling')
+
+    def handle_endtag(self,tag):
+        if tag not in ('p','br','span'):
+            raise ValueError('Additional body markup needs separate handling')
+
+
 def decode_case_response(raw,source_url,captured_at):
     """Project complete native judgment/appeal HTML fields from a local response.
 
-    This supports the observed br/p-only source shape. Additional source fields,
+    This supports the observed br/p and transparent vertical-align span shape. Additional source fields,
     lists or media require explicit handling instead of silently dropping them.
     A publication record can contain two judicial bodies; it is not two rows.
     """
@@ -109,8 +123,7 @@ def decode_case_response(raw,source_url,captured_at):
             if value:raise ValueError('Body conflicts with source component state')
             continue
         if not isinstance(value,str) or not value.strip():raise ValueError('Missing complete source body')
-        if re.search(r'<\s*/?\s*(?!br\b|p\b)[A-Za-z][^>]*>',value,re.I):
-            raise ValueError('Additional body markup needs separate handling')
+        formatting=CaseFormatting();formatting.feed(value);formatting.close()
         text=html_body_text(value)
         if not text or '\ufffd' in text or '\x00' in text:raise ValueError('Missing or corrupted source body')
         if parts:offset+=2
@@ -138,6 +151,19 @@ def decode_case_response(raw,source_url,captured_at):
         row[level+'_gregorian_date_raw']=model.get(level+'Date')
     row.update(court_name=model.get('judgmentCourtName'),city=model.get('judgmentCityName'),
                appeal_court_name=model.get('appealCourtName'),appeal_city=model.get('appealCityName'))
+    row['quality_flags']=[]
+    if any('<span' in model[c['source_field']].lower() for c in components):
+        row['quality_flags'].append('transparent_inline_vertical_align_span_removed')
+    if row['title'] in ('--','-',''):
+        row['title']=None
+        row['quality_flags'].append('publisher_title_placeholder_retained_as_null')
+    for present,fields in (
+        (row['has_judgment'],('judgment_number','judgment_hijri_date_raw','judgment_gregorian_date_raw','court_name','city')),
+        (row['has_appeal'],('appeal_number','appeal_hijri_date_raw','appeal_gregorian_date_raw','appeal_court_name','appeal_city'))):
+        if present:continue
+        if any(row.get(k) not in (None,'') for k in fields):
+            row['quality_flags'].append('inactive_component_metadata_not_promoted')
+        for key in fields:row[key]=None
     return row
 
 

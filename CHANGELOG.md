@@ -2,7 +2,9 @@
 
 ## 0.4.0
 
-- Add selected Arabic text snapshots: 454 BOE bodies, 76 MOJ instrument publications and 480 court publication records, plus separate exact article/section configurations.
+- Complete the 38,011-file court native inventory and independently reviewed resumable court batches; preserve all pending/private records. Repair four BOE original-base parents from official images with separate version evidence.
+
+- Add selected Arabic text snapshots: 457 BOE bodies, 76 MOJ instrument publications and 918 court publication records, plus separate exact article/section configurations.
 - Add saved-response MOJ adapters, source-backed BOE refinement, an exact reviewed-projection export gate and real public text loading/verification examples.
 - Document source-specific affirmative rights, source/version and privacy decisions, correction provenance and capture limitations. Preserve earlier tools/catalogue releases and original inputs.
 

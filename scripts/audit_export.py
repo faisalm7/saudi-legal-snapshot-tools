@@ -7,7 +7,7 @@ import re
 import pyarrow.parquet as pq
 
 PRIVATE_PATH = re.compile(r"/(?:Users|home)/[A-Za-z0-9_.-]+")
-SECRETS = re.compile(r"(?:hf_[A-Za-z0-9]{24,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[A-Z0-9]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----)")
+SECRETS = re.compile(r"(?<![A-Za-z0-9_])(?:hf_[A-Za-z0-9]{24,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[A-Z0-9]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----)")
 BAD_PARTS = {".git", ".venv", "__pycache__", ".pytest_cache", "node_modules", "vectorstore", "build", "dist"}
 EMAIL = re.compile(r"[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}")
 PHONE = re.compile(r"(?<!\d)(?:\+966|00966|05)\d{8,9}(?!\d)")

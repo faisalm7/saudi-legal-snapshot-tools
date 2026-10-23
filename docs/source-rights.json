@@ -2,11 +2,11 @@
   "schema_version": "0.4.0",
   "review_date": "2026-10-23",
   "report_type": "aggregate_status_not_a_record_level_rights_registry",
-  "selected_source_publication_records": 1010,
+  "selected_source_publication_records": 1451,
   "selected_counts": {
-    "boe": 454,
+    "boe": 457,
     "moj_instruments": 76,
-    "court_publications": 480
+    "court_publications": 918
   },
   "code_documentation_invented_fixtures": "MIT",
   "actual_source_text": "source_specific_statutory_exclusion_and_MOJ_policy_conditions_not_MIT_or_CC0",
