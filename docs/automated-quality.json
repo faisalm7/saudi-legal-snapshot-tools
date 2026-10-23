@@ -1,0 +1,30 @@
+{
+  "schema_version": "0.3.0",
+  "historical_processing_evidence_version": "0.2.0",
+  "scope": "private_BOE_capture_processing_aggregate",
+  "source_json_files": 468,
+  "source_pdf_files": 468,
+  "parsed_records": 468,
+  "unique_source_ids": 468,
+  "unique_exact_texts": 468,
+  "captured_text_hashes_verified": 468,
+  "article_heading_sequences_aligned": 350,
+  "exact_dom_article_span_rows": 9305,
+  "structure_deferred": {
+    "no_isolated_pdf_headings": 59,
+    "ambiguous_or_mismatched_sequence": 57,
+    "empty_article_body": 2
+  },
+  "source_rights_basis_non_null": 0,
+  "public_legal_text_records_eligible": 0,
+  "public_source_catalogue_rows": 468,
+  "public_source_catalogue_contains_legal_bodies": false,
+  "legal_completeness_verified": false,
+  "human_or_legal_expert_review_claimed": false,
+  "limitations": [
+    "Preserved DOM may omit list numbering, list items, illustrations or annex content.",
+    "Article-offset integrity does not establish completeness or legal validity.",
+    "Newlines and paragraph structure lost upstream are not restored.",
+    "These counts are processing results, not a final quality acceptance or publication decision."
+  ]
+}
