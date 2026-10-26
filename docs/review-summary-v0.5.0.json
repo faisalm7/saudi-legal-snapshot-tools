@@ -1,0 +1,210 @@
+{
+  "release_version": "0.5.0",
+  "status": "reviewed_release_candidate_additional_frozen_queues_still_in_progress",
+  "baseline_huggingface_commit": "cecf74066266d653430c87e493ad9320c7ac9ae5",
+  "baseline_court_publications": 918,
+  "court_publications": 8764,
+  "court_additions": 7846,
+  "court_populated_body_components": 9006,
+  "completed_new_context_reviews": 8063,
+  "new_specific_holds": 194,
+  "prior_reviewed_current_privacy_hold_versions": 71,
+  "cohorts": [
+    {
+      "cohort": "initial_captured_pending",
+      "complete_primary_and_independent_contexts": 1141,
+      "specific_holds": 20,
+      "approved_candidates_before_cross_cohort_deduplication": 1121
+    },
+    {
+      "cohort": "transport_recovery01",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 5,
+      "aliases_after_cross_cohort_deduplication": 2,
+      "new_publications": 393
+    },
+    {
+      "cohort": "historical_single_page_recovery",
+      "complete_primary_and_independent_contexts": 1,
+      "specific_holds": 0,
+      "new_publications": 1
+    },
+    {
+      "cohort": "recovery02",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 7,
+      "aliases_after_context_review": 4,
+      "approved_candidates_before_cross_cohort_deduplication": 389
+    },
+    {
+      "cohort": "recovery03",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 4,
+      "aliases_after_context_review": 1,
+      "approved_candidates_before_cross_cohort_deduplication": 395
+    },
+    {
+      "cohort": "recovery04",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 4,
+      "aliases_after_context_review": 2,
+      "approved_candidates_before_cross_cohort_deduplication": 394
+    },
+    {
+      "cohort": "formatting-recovery",
+      "complete_primary_and_independent_contexts": 2,
+      "specific_holds": 0,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 2
+    },
+    {
+      "cohort": "recovery05",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 2,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 398
+    },
+    {
+      "cohort": "recovery06",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 4,
+      "aliases_after_context_review": 2,
+      "approved_candidates_before_cross_cohort_deduplication": 394
+    },
+    {
+      "cohort": "recovery07",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 7,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 393
+    },
+    {
+      "cohort": "recovery08",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 11,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 389
+    },
+    {
+      "cohort": "PDF-version-recovery0867",
+      "complete_primary_and_independent_contexts": 1,
+      "specific_holds": 0,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 1
+    },
+    {
+      "cohort": "recovery09",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 12,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 388
+    },
+    {
+      "cohort": "historical-PDF-version-recovery09153",
+      "complete_primary_and_independent_contexts": 1,
+      "specific_holds": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 1
+    },
+    {
+      "cohort": "recovery10",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 11,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 389
+    },
+    {
+      "cohort": "recovery11",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 8,
+      "aliases_after_context_review": 2,
+      "approved_candidates_before_cross_cohort_deduplication": 390
+    },
+    {
+      "cohort": "recovery12",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 17,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 383
+    },
+    {
+      "cohort": "recovery13",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 11,
+      "aliases_after_context_review": 1,
+      "approved_candidates_before_cross_cohort_deduplication": 388
+    },
+    {
+      "cohort": "recovery14",
+      "complete_primary_and_independent_contexts": 106,
+      "specific_holds": 3,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 103
+    },
+    {
+      "cohort": "recovery15",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 27,
+      "aliases_after_context_review": 5,
+      "approved_candidates_before_cross_cohort_deduplication": 368
+    },
+    {
+      "cohort": "recovery16",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 12,
+      "aliases_after_context_review": 1,
+      "approved_candidates_before_cross_cohort_deduplication": 387
+    },
+    {
+      "cohort": "recovery17",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 14,
+      "aliases_after_context_review": 1,
+      "approved_candidates_before_cross_cohort_deduplication": 385
+    },
+    {
+      "cohort": "recovery18",
+      "complete_primary_and_independent_contexts": 400,
+      "specific_holds": 15,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 385
+    },
+    {
+      "cohort": "formatting-recovery-remaining",
+      "complete_primary_and_independent_contexts": 4,
+      "specific_holds": 0,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 4
+    },
+    {
+      "cohort": "retry-two503",
+      "complete_primary_and_independent_contexts": 2,
+      "specific_holds": 0,
+      "aliases_after_context_review": 0,
+      "approved_candidates_before_cross_cohort_deduplication": 2
+    },
+    {
+      "cohort": "supreme-recovery",
+      "complete_primary_and_independent_contexts": 5,
+      "specific_holds": 0,
+      "aliases_after_context_review": 1,
+      "approved_candidates_before_cross_cohort_deduplication": 4
+    }
+  ],
+  "unreviewed_captured_material_is_rejected": false,
+  "original_court_family_files_processed_previously": 38011,
+  "original_court_family_distinct_byte_hashes": 37832,
+  "BOE_source_publications": 468,
+  "BOE_article_spans": 9358,
+  "BOE_new_parent_publications": 11,
+  "BOE_new_article_spans": 208,
+  "BOE_normative_annex_facsimile_pages": 96,
+  "unique_semantic_cases": null,
+  "unique_semantic_laws": null,
+  "review_method": "Full proposed API context and metadata read in a primary and separate independent AI-agent pass; exact source/body/components/projection bindings checked. Source differences assessed contextually. Selected material questions use complete native/PDF comparisons or whole-page facsimiles. Not every PDF visually read; no human/legal-expert certification, anonymity guarantee or accuracy estimate.",
+  "source_hold_reasons": [
+    "Specific identifying personal financial, intimate family, health or liberty contexts; assessed separately from ordinary names, professions, business credit or amounts.",
+    "Material source corruption or critical missing context; no invented source wording.",
+    "Unknown original source identity, authored commentary boundaries or unusable OCR."
+  ],
+  "resume_checkpoint": "Private frozen inventory and append-only acquisition/review checkpoints retained; remaining captures require complete contextual and independent review before publication."
+}

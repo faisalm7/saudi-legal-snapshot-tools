@@ -110,3 +110,85 @@ def test_transparent_observed_span_preserves_all_words_numbers_negations(respons
     response['model']['judgmentTextofRulling']='<p><span data-source-note="substantive">نص</span></p>'
     with pytest.raises(ValueError,match='span attributes'):
         decode_case_response(json.dumps(response).encode(),URL,TIME)
+
+
+@pytest.mark.parametrize('size',['14','١٤'])
+def test_observed_font_size_keeps_complete_arabic_context(response,size):
+    body=f'<p><span style="font-size: {size}pt;">مثال اصطناعي: لا يلزم دفع ٢٧.٥ في ١٤٤٤/٠١/٠٢.</span></p>'
+    response['model']['judgmentTextofRulling']=body
+    r=decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+    assert r['text_ar']=='مثال اصطناعي: لا يلزم دفع ٢٧.٥ في ١٤٤٤/٠١/٠٢.'
+    assert r['source_body_html_sha256']==sha256(body.encode())
+    assert 'transparent_inline_14pt_font_size_span_removed' in r['quality_flags']
+    for style in ('font-size: 0pt;','font-size: 14pt; display: none;'):
+        response['model']['judgmentTextofRulling']=f'<p><span style="{style}">مثال لا يجوز إخفاؤه.</span></p>'
+        with pytest.raises(ValueError,match='span attributes'):
+            decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+
+
+def test_observed_unordered_list_preserves_order_boundaries_and_literals(response):
+    body='<ul><li>مثال اصطناعي: لا يلزم دفع ٢٧.٥.</li><li>بتاريخ ١٤٤٤/٠١/٠٢؛ لا تُحذف العبارة.</li></ul>'
+    response['model']['judgmentTextofRulling']=body
+    r=decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+    assert r['text_ar']=='مثال اصطناعي: لا يلزم دفع ٢٧.٥.\n\nبتاريخ ١٤٤٤/٠١/٠٢؛ لا تُحذف العبارة.'
+    assert r['source_body_html_sha256']==sha256(body.encode())
+    assert r['quality_flags']==['unordered_list_boundaries_preserved_as_line_breaks']
+    for bad in ('<ul style="display:none"><li>نص</li></ul>',
+                '<ul><li value="3">نص</li></ul>', '<ol start="3"><li>نص</li></ol>'):
+        response['model']['judgmentTextofRulling']=bad
+        with pytest.raises(ValueError):
+            decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+
+
+def test_case_paragraph_formatting_does_not_silently_accept_hidden_or_active_markup(response):
+    for body in ('<p style="text-align: justify;">مثال اصطناعي: لا يلزم ٢٧.</p>',
+                 '<p style="text-align: right;">مثال اصطناعي: لا يلزم ٢٧.</p>'):
+        response['model']['judgmentTextofRulling']=body
+        assert decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)['text_ar']=='مثال اصطناعي: لا يلزم ٢٧.'
+    for body in ('<p style="display:none">لا يجوز إخفاء العبارة.</p>',
+                 '<p onclick="alert(1)">لا يجوز تغيير المصدر.</p>',
+                 '<br style="display:none">نص', '<p hidden>نص</p>'):
+        response['model']['judgmentTextofRulling']=body
+        with pytest.raises(ValueError):
+            decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+
+
+def test_observed_paragraph_direction_keeps_literal_logical_order_with_a_flag(response):
+    body='<p style="direction: ltr; text-align: right;">مثال اصطناعي: لا يلزم دفع 12 في 1444/01/02.</p>'
+    response['model']['judgmentTextofRulling']=body
+    row=decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+    assert row['text_ar']=='مثال اصطناعي: لا يلزم دفع 12 في 1444/01/02.'
+    assert row['source_body_html_sha256']==sha256(body.encode())
+    assert row['quality_flags']==['publisher_ltr_paragraph_direction_plaintext_keeps_logical_text_node_order']
+
+
+def test_attribute_free_emphasis_keeps_literal_words_numbers_and_component_offsets(response):
+    response['model']['judgmentTextofRulling']='<p>مثال اصطناعي <strong>لا يجوز ١٢٣ في 1444/02/03</strong> الحذف.</p>'
+    raw=json.dumps(response,ensure_ascii=False).encode()
+    record=decode_case_response(raw,URL,TIME)
+    assert record['text_ar']=='مثال اصطناعي لا يجوز ١٢٣ في 1444/02/03 الحذف.'
+    assert record['source_file_sha256']==sha256(raw)
+    part=json.loads(record['source_components_json'])[0]
+    assert part['source_html_sha256']==sha256(response['model']['judgmentTextofRulling'].encode())
+    assert record['text_ar'][part['start_char']:part['end_char']]==record['text_ar']
+    assert record['rights_basis'] is None and record['privacy_review'] is None
+
+
+@pytest.mark.parametrize('attribute',['style="display:none"','onclick="invented()"','title="unreviewed substantive annotation"'])
+def test_unreviewed_emphasis_attributes_are_not_silently_discarded(response,attribute):
+    response['model']['judgmentTextofRulling']=f'<p>مثال اصطناعي <strong {attribute}>لا يجوز الحذف</strong></p>'
+    with pytest.raises(ValueError,match='emphasis attributes'):
+        decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+
+
+def test_observed_black_text_style_preserves_exact_source_nodes_and_hashes(response):
+    body='<p>مثال اصطناعي: <span style="color: rgb(0, 0, 0);">لا يلزم ١٢.٣ في 1444/01/02.</span></p>'
+    response['model']['judgmentTextofRulling']=body
+    record=decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+    assert record['text_ar']=='مثال اصطناعي: لا يلزم ١٢.٣ في 1444/01/02.'
+    assert record['source_body_html_sha256']==sha256(body.encode())
+    assert 'publisher_black_text_colour_style_removed_text_nodes_unchanged' in record['quality_flags']
+    for style in ('color: rgb(255, 255, 255);','color: rgb(0, 0, 0); display:none;'):
+        response['model']['judgmentTextofRulling']=f'<p><span style="{style}">مثال اصطناعي لا يُخفى.</span></p>'
+        with pytest.raises(ValueError,match='span attributes'):
+            decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)

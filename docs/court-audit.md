@@ -1,4 +1,10 @@
-# Court inventory and selected publications
+# Court processing and publication · v0.5.0
+
+The current candidate contains **8,764 court publication records and 9,006 populated source body components**, an addition of 7,846 publication records since v0.4.0. [Coverage](coverage.json) is computed from the actual Parquet files; the [review summary](review-summary-v0.5.0.json) separates completed contexts, specific holds and duplicate publications. Remaining frozen queues are still in progress, not rejected.
+
+## Preserved v0.4.0 inventory and review evidence
+
+The following section reports the previous release and its frozen checkpoint. Its counts are historical; the original file inventory is unchanged.
 
 Publish 918 source publication body records/920 populated source components, after retaining 479 initial records, excluding one independently confirmed initial alias, and adding 439 individually approved current API records. Six duplicate bodies in total are excluded with source relations. All selected source IDs are distinct, but a component can contain multiple judicial decisions and source republications can share a dispute; semantic unique-case coverage is not asserted.
 

@@ -1,12 +1,12 @@
 {
-  "schema_version": "0.4.0",
-  "review_date": "2026-10-23",
+  "schema_version": "0.5.0",
+  "review_date": "2026-10-24",
   "report_type": "aggregate_status_not_a_record_level_rights_registry",
-  "selected_source_publication_records": 1451,
+  "selected_source_publication_records": 9308,
   "selected_counts": {
-    "boe": 457,
+    "boe": 468,
     "moj_instruments": 76,
-    "court_publications": 918
+    "court_publications": 8764
   },
   "code_documentation_invented_fixtures": "MIT",
   "actual_source_text": "source_specific_statutory_exclusion_and_MOJ_policy_conditions_not_MIT_or_CC0",
@@ -17,5 +17,6 @@
   "quality_privacy_and_version_reviews_separate": true,
   "local_privacy_redactions_added": 0,
   "original_PDFs_or_synthetic_fixtures_in_text_dataset": false,
-  "underlying_source_license_granted_by_tools_publisher": false
+  "underlying_source_license_granted_by_tools_publisher": false,
+  "normative_BOE_annex_facsimile_pages": 96
 }

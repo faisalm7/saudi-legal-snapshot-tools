@@ -1,3 +1,5 @@
+> The comparison below is the preserved v0.4.0 evidence. Current coverage and additions are generated separately in [coverage.json](coverage.json); no new benchmark or blanket superiority claim is inferred from expansion.
+
 # Contribution and comparison
 
 Primary comparison evidence checked 23 October2026 against all 468 recovered legacy BOE JSON captures, before the final 454-body selection and the education-image completion. The comparison is a capture/body diagnostic, not a novelty or final-release accuracy score.

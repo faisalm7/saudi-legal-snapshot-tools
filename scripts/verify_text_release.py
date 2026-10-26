@@ -14,6 +14,19 @@ from saudi_legal.core import sha256, canonical
 from saudi_legal.text_release import _expected_native_units, projection_sha256
 
 
+def read_annex_asset(dataset, name, revision=None):
+    if Path(name).name != name or not name.endswith('.jpg'):
+        raise ValueError('Unexpected annex asset path')
+    local = Path(dataset).is_dir()
+    path = Path(dataset)/name if local else Path(hf_hub_download(
+        dataset, name, repo_type='dataset', revision=revision, token=False))
+    # Local export files must be ordinary files. The Hub's own snapshot cache
+    # normally uses symlinks to content-addressed blobs, whose bytes we hash.
+    if local and path.is_symlink():
+        raise ValueError('Annex asset must be an ordinary file')
+    return path.read_bytes()
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset",default="Faisal73/saudi-legal-text-snapshots")
@@ -22,6 +35,8 @@ def main():
     def read(name):
         path=Path(args.dataset)/name if local else Path(hf_hub_download(args.dataset,name,repo_type="dataset",revision=args.revision,token=False))
         return path.read_text()
+    def asset_bytes(name):
+        return read_annex_asset(args.dataset, name, args.revision)
     metrics=json.loads(read("metrics.json"))
     reviews={r["document_id"]:r for r in map(json.loads,read("record-reviews.jsonl").splitlines())}
     counts={};parents={};boe_parents={};boe_units={};actual_articles=Counter();all_unit_ids=set();unit_ids={"article_spans":set(),"source_sections":set()}
@@ -81,8 +96,26 @@ def main():
         if [a["article_position"] for a in units]!=list(range(1,len(units)+1)):raise ValueError("BOE article position mismatch")
         if sha256("".join(canonical(u) for u in units).encode())!=reviews[did]["article_spans_sha256"]:
             raise ValueError("BOE article evidence projection differs from reviewed source")
+    assets_verified=0
+    annexes=metrics.get('annex_facsimiles')
+    if annexes:
+        pages=[json.loads(line) for line in read('boe-annex-pages.jsonl').splitlines()]
+        if len(pages)!=annexes['pages']:raise ValueError('Annex page count mismatch')
+        seen_assets=set()
+        for page in pages:
+            parent=boe_parents[page['document_id']]
+            if (page['source_id']!=parent['source_id'] or page['parent_text_sha256']!=parent['text_sha256']
+                or page['parent_source_url']!=parent['source_url']):
+                raise ValueError('Annex parent/source binding mismatch')
+            name=page['asset_path']
+            if name in seen_assets:raise ValueError('Repeated annex asset')
+            seen_assets.add(name);raw=asset_bytes(name)
+            if len(raw)!=page['bytes'] or sha256(raw)!=page['source_image_sha256'] or not raw.startswith(b'\xff\xd8'):
+                raise ValueError('Annex asset bytes/hash mismatch')
+            assets_verified+=1
     print(json.dumps({"configuration_rows":counts,"reviewed_document_projections_verified":len(reviews),
         "published_source_units_verified":len(all_unit_ids)+sum(len(v) for v in boe_units.values()),
+        "annex_image_assets_verified":assets_verified,
         "source_byte_retrieval_or_accuracy_certificate":False},indent=2))
 
 

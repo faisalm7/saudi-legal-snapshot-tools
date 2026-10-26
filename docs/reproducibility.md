@@ -2,7 +2,7 @@
 
 ## Public loading
 
-CPython 3.12, `requirements.lock` and a normal `pip install --no-deps .` are sufficient for the README's real text example and `scripts/verify_text_release.py`. Both accept `--dataset` (Hub ID or local dataset folder) and `--revision` (immutable Hub commit). No private collection, Poppler, authentication or model service is required to load/check the published six Parquet configurations, all split `corpus`. The verifier checks public structure and review hashes; it cannot reconstruct or authenticate unavailable original response/PDF bytes. See official [loading](https://huggingface.co/docs/datasets/loading), [card](https://huggingface.co/docs/hub/datasets-cards) and [configuration](https://huggingface.co/docs/hub/datasets-data-files-configuration) documentation.
+CPython 3.12, `requirements.lock` and a normal `pip install --no-deps .` are sufficient for the README's real text example and `scripts/verify_text_release.py`. Both accept `--dataset` (Hub ID or local dataset folder) and `--revision` (immutable Hub commit). No private collection, Poppler, authentication or model service is required to load/check the published six Parquet configurations, all split `corpus`, plus separately indexed normative annex assets. The verifier checks public structure and review hashes; it cannot reconstruct or authenticate unavailable original response/PDF bytes. See official [loading](https://huggingface.co/docs/datasets/loading), [card](https://huggingface.co/docs/hub/datasets-cards) and [configuration](https://huggingface.co/docs/hub/datasets-data-files-configuration) documentation.
 
 ## Compatible files supplied by a user
 
@@ -27,4 +27,4 @@ Published hashes, source URLs, capture/version labels, structure and correction 
 
 The offline synthetic fixture reproduces software behavior independently and never fetches its synthetic BOE-shaped identifier. Tests are regression evidence, not legal-content accuracy or platform-universal certification. Stable text/hash/offset results do not imply byte-identical timing journals. Use a pinned release and dataset revision when citing results.
 
-Case conversion accepts only checked paragraph/line-break formatting and the exact inherited vertical-alignment span form; unknown/active markup is rejected rather than stripped blindly. Source HTML/text hashes and all populated fields remain evidenced. This validation cannot establish that a supplied official-looking response was truly acquired from the publisher.
+Case conversion accepts only checked paragraph/line-break formatting attribute-free unordered lists, exactly observed paragraph alignment, and inherited vertical-alignment or transparent 14pt spans; unknown/active markup is rejected rather than stripped blindly. Source HTML/text hashes and all populated fields remain evidenced. This validation cannot establish that a supplied official-looking response was truly acquired from the publisher.

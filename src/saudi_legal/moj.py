@@ -86,21 +86,31 @@ def capture_supreme(response_file,source_url,captured_at,output):
 class CaseFormatting(HTMLParser):
     """Recognize only observed inline formatting with no substantive attributes."""
     def handle_starttag(self,tag,attrs):
-        if tag not in ('p','br','span'):
+        if tag not in ('p','br','span','ul','li','strong'):
             raise ValueError('Additional body markup needs separate handling')
-        if tag=='span' and attrs!=[('style','vertical-align: inherit;')]:
+        if tag=='strong' and attrs:
+            raise ValueError('Additional emphasis attributes need separate handling')
+        if tag in ('ul','li') and attrs:
+            raise ValueError('Additional list attributes need separate handling')
+        if tag=='br' and attrs:
+            raise ValueError('Additional line-break attributes need separate handling')
+        if tag=='p' and attrs not in ([], [('style','text-align: justify;')], [('style','text-align: right;')],
+                                     [('style','direction: ltr; text-align: right;')]):
+            raise ValueError('Additional paragraph attributes need separate handling')
+        observed_styles=('vertical-align: inherit;','font-size: ١٤pt;','font-size: 14pt;','color: rgb(0, 0, 0);')
+        if tag=='span' and not (len(attrs)==1 and attrs[0][0]=='style' and attrs[0][1] in observed_styles):
             raise ValueError('Additional span attributes need separate handling')
 
     def handle_endtag(self,tag):
-        if tag not in ('p','br','span'):
+        if tag not in ('p','br','span','ul','li','strong'):
             raise ValueError('Additional body markup needs separate handling')
 
 
 def decode_case_response(raw,source_url,captured_at):
     """Project complete native judgment/appeal HTML fields from a local response.
 
-    This supports the observed br/p and transparent vertical-align span shape. Additional source fields,
-    lists or media require explicit handling instead of silently dropping them.
+    This supports observed br/p, attribute-free emphasis/unordered lists and transparent
+    vertical-align or 14pt spans. Other fields or media require explicit handling.
     A publication record can contain two judicial bodies; it is not two rows.
     """
     parsed=urlparse(source_url)
@@ -152,8 +162,16 @@ def decode_case_response(raw,source_url,captured_at):
     row.update(court_name=model.get('judgmentCourtName'),city=model.get('judgmentCityName'),
                appeal_court_name=model.get('appealCourtName'),appeal_city=model.get('appealCityName'))
     row['quality_flags']=[]
-    if any('<span' in model[c['source_field']].lower() for c in components):
+    if any('direction: ltr; text-align: right;' in model[c['source_field']] for c in components):
+        row['quality_flags'].append('publisher_ltr_paragraph_direction_plaintext_keeps_logical_text_node_order')
+    if any(re.search(r'<\s*(?:ul|li)\b',model[c['source_field']],re.I) for c in components):
+        row['quality_flags'].append('unordered_list_boundaries_preserved_as_line_breaks')
+    if any('vertical-align: inherit;' in model[c['source_field']] for c in components):
         row['quality_flags'].append('transparent_inline_vertical_align_span_removed')
+    if any('color: rgb(0, 0, 0);' in model[c['source_field']] for c in components):
+        row['quality_flags'].append('publisher_black_text_colour_style_removed_text_nodes_unchanged')
+    if any('font-size:' in model[c['source_field']] for c in components):
+        row['quality_flags'].append('transparent_inline_14pt_font_size_span_removed')
     if row['title'] in ('--','-',''):
         row['title']=None
         row['quality_flags'].append('publisher_title_placeholder_retained_as_null')

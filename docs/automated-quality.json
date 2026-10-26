@@ -1,316 +1,338 @@
 {
-  "schema_version": "0.4.0",
-  "scope": "selected_release_structure_and_review_aggregate_not_an_accuracy_certificate",
-  "selected_publication_records": 1451,
+  "schema_version": "0.5.0",
+  "scope": "Current aggregate derived from final Parquet artifacts; no extraction accuracy estimate.",
+  "selected_publication_records": 9308,
   "configuration_rows": {
     "laws": 76,
-    "judgments": 918,
+    "judgments": 8764,
     "article_spans": 4505,
     "source_sections": 1605,
-    "boe_documents": 457,
-    "boe_article_spans": 9150
+    "boe_documents": 468,
+    "boe_article_spans": 9358
   },
-  "boe_selected_with_verified_structure": 346,
-  "boe_selected_body_only": 111,
-  "boe_material_quality_deferrals": 11,
-  "court_complete_source_body_components": 920,
-  "court_current_privacy_deferrals": 71,
-  "court_duplicate_alias_bodies_excluded": 6,
-  "legal_completeness_verified": false,
-  "human_or_legal_expert_review_claimed": false,
-  "historical_v02_processing_baseline": {
-    "source_json_files": 468,
-    "source_pdf_files": 468,
-    "parsed_records": 468,
-    "article_heading_sequences_aligned": 350,
-    "exact_dom_article_span_rows": 9305,
-    "structure_deferred": {
-      "no_isolated_pdf_headings": 59,
-      "ambiguous_or_mismatched_sequence": 57,
-      "empty_article_body": 2
-    }
+  "annex_facsimiles": {
+    "pages": 96,
+    "parent_publications": 6,
+    "bytes": 12492928,
+    "metadata": "boe-annex-pages.jsonl",
+    "counted_as_documents_or_articles": false
   },
-  "limitations": [
-    "Preserved DOM may omit list numbering, list items, illustrations or annex content.",
-    "Article-offset integrity does not establish completeness or legal validity.",
-    "Newlines and paragraph structure lost upstream are not restored.",
-    "These counts describe byte/native processing and selected reviewed publication; they do not clear every underlying body."
-  ],
-  "full_court_inventory_byte_native_JSON_processing_complete": true,
-  "full_court_inventory_contextual_clearance_complete": false,
-  "court_inventory_and_review": {
-    "evidence_version": "final-decision-overlay-2026-10-23-v2",
-    "as_of_utc": "2026-10-23T21:32:13.411683+00:00",
-    "approval_manifest_sha256": "f95317f1ebe1f4d3d3baae66ecd38aea50cf6b85b3130dd8d4df581e9ea1bbea",
-    "capture_checkpoint_sha256": "a2e38d390d579078f6aeca0b2b9b19f314ef0e637a04e39c48eb6dde850955ae",
-    "original_inventory": {
-      "files_examined": 38011,
-      "bytes_hashed": 4962953045,
-      "distinct_file_hashes": 37832,
-      "unavailable_files": 0,
-      "size_or_mtime_changes": 0,
-      "families": {
-        "grievances_compilation_pdf": {
-          "enumerated_files": 17,
-          "bytes_enumerated": 2339356797,
-          "files_byte_hashed": 17,
-          "distinct_file_hashes": 17,
-          "excess_exact_file_copies": 0,
-          "native_or_JSON_texts_processed": 17,
-          "distinct_exact_raw_text_groups": 17,
-          "excess_exact_raw_text_copies": 0,
-          "native_or_JSON_processing_statuses": {
-            "pdf_native_extracted": 17
-          },
-          "PDF_pages": 8866,
-          "PDF_parse_error_fields": 0,
-          "empty_or_portal_shell_under100_characters": 0,
-          "zero_native_Arabic_files": 17,
-          "files_with_presentation_forms": 0,
-          "files_with_replacement_characters": 0,
-          "substantive_exact_native_text_groups_not_judgment_count": 0,
-          "nonoverlapping_file_dispositions": {
-            "primary_scanned_volume_no_usable_native_Arabic": 17
-          },
-          "sum_file_dispositions": 17
-        },
-        "moj_cases_derived_json": {
-          "enumerated_files": 4926,
-          "bytes_enumerated": 82356532,
-          "files_byte_hashed": 4926,
-          "distinct_file_hashes": 4926,
-          "excess_exact_file_copies": 0,
-          "native_or_JSON_texts_processed": 4926,
-          "distinct_exact_raw_text_groups": 4017,
-          "excess_exact_raw_text_copies": 909,
-          "native_or_JSON_processing_statuses": {
-            "json_parsed": 4926
-          },
-          "PDF_pages": 0,
-          "PDF_parse_error_fields": 0,
-          "empty_or_portal_shell_under100_characters": 0,
-          "zero_native_Arabic_files": 0,
-          "files_with_presentation_forms": 4926,
-          "files_with_replacement_characters": 0,
-          "substantive_exact_native_text_groups_not_judgment_count": 4017,
-          "nonoverlapping_file_dispositions": {
-            "primary_derived_representation_of_existing_PDF": 4017,
-            "secondary_exact_raw_text_copy": 909
-          },
-          "sum_file_dispositions": 4926
-        },
-        "moj_cases_pdf": {
-          "enumerated_files": 32896,
-          "bytes_enumerated": 2101838582,
-          "files_byte_hashed": 32896,
-          "distinct_file_hashes": 32717,
-          "excess_exact_file_copies": 179,
-          "native_or_JSON_texts_processed": 32896,
-          "distinct_exact_raw_text_groups": 21114,
-          "excess_exact_raw_text_copies": 11782,
-          "native_or_JSON_processing_statuses": {
-            "pdf_native_extracted": 32896
-          },
-          "PDF_pages": 77385,
-          "PDF_parse_error_fields": 0,
-          "empty_or_portal_shell_under100_characters": 365,
-          "zero_native_Arabic_files": 0,
-          "files_with_presentation_forms": 4775,
-          "files_with_replacement_characters": 0,
-          "substantive_exact_native_text_groups_not_judgment_count": 21113,
-          "nonoverlapping_file_dispositions": {
-            "primary_substantive_native_text_group_with_strict_current_publisher_identity": 15562,
-            "secondary_exact_raw_text_copy": 11603,
-            "primary_substantive_native_text_group_without_unique_current_identity": 5551,
-            "primary_empty_or_low_native_capture": 1,
-            "secondary_exact_file_copy": 179
-          },
-          "sum_file_dispositions": 32896
-        },
-        "qadha_derived_json": {
-          "enumerated_files": 86,
-          "bytes_enumerated": 47541254,
-          "files_byte_hashed": 86,
-          "distinct_file_hashes": 86,
-          "excess_exact_file_copies": 0,
-          "native_or_JSON_texts_processed": 86,
-          "distinct_exact_raw_text_groups": 86,
-          "excess_exact_raw_text_copies": 0,
-          "native_or_JSON_processing_statuses": {
-            "json_parsed": 86
-          },
-          "PDF_pages": 0,
-          "PDF_parse_error_fields": 0,
-          "empty_or_portal_shell_under100_characters": 0,
-          "zero_native_Arabic_files": 0,
-          "files_with_presentation_forms": 42,
-          "files_with_replacement_characters": 27,
-          "substantive_exact_native_text_groups_not_judgment_count": 86,
-          "nonoverlapping_file_dispositions": {
-            "primary_derived_representation_of_existing_PDF": 86
-          },
-          "sum_file_dispositions": 86
-        },
-        "qadha_unverified_pdf": {
-          "enumerated_files": 86,
-          "bytes_enumerated": 391859880,
-          "files_byte_hashed": 86,
-          "distinct_file_hashes": 86,
-          "excess_exact_file_copies": 0,
-          "native_or_JSON_texts_processed": 86,
-          "distinct_exact_raw_text_groups": 86,
-          "excess_exact_raw_text_copies": 0,
-          "native_or_JSON_processing_statuses": {
-            "pdf_native_extracted": 86
-          },
-          "PDF_pages": 22592,
-          "PDF_parse_error_fields": 0,
-          "empty_or_portal_shell_under100_characters": 0,
-          "zero_native_Arabic_files": 1,
-          "files_with_presentation_forms": 51,
-          "files_with_replacement_characters": 33,
-          "substantive_exact_native_text_groups_not_judgment_count": 85,
-          "nonoverlapping_file_dispositions": {
-            "primary_third_party_compilation_official_text_commentary_boundaries_and_reuse_unresolved": 86
-          },
-          "sum_file_dispositions": 86
-        }
-      },
-      "semantic_unique_judgments_collection_wide": null,
-      "semantic_unique_judgments_reason": "Exact PDFs, native text groups, source publication locators, case identifiers and legal judgments are different units. Ambiguous headers and multiple judgment/appeal bodies prevent a supported collection-wide semantic judgment count."
+  "current_coverage": "coverage.json",
+  "current_context_review": "review-summary-v0.5.0.json",
+  "historical_v04_evidence": {
+    "schema_version": "0.4.0",
+    "scope": "selected_release_structure_and_review_aggregate_not_an_accuracy_certificate",
+    "selected_publication_records": 1451,
+    "configuration_rows": {
+      "laws": 76,
+      "judgments": 918,
+      "article_spans": 4505,
+      "source_sections": 1605,
+      "boe_documents": 457,
+      "boe_article_spans": 9150
     },
-    "source_traceable_non_supreme_native_processing": {
-      "distinct_publisher_locators": 15163,
-      "source_locator_plus_native_versions": 15344,
-      "source_PDF_paths": 22523,
-      "versions_with_complete_outer_body": 15090,
-      "complete_nonempty_body_components": 18301,
-      "versions_with_unresolved_outer_boundary": 254,
-      "native_cache_unavailable": 0,
-      "short_complete_context_selection_versions": 7148,
-      "short_complete_context_selection_locators": 7125
-    },
-    "frozen_current_capture": {
-      "main_current_API_body_records": 1624,
-      "separate_transparent_span_repair_body_records": 6,
-      "unique_current_publisher_UUIDs_after_sidecar": 1630,
-      "all_current_body_components": 1636,
-      "all_current_body_characters": 3763913,
-      "span_sidecar_supersedes_old_engineering_projection_failures": 6,
-      "current_captures_are_not_all_new_coverage": true,
-      "main_checkpoint_is_unchanged_by_decision_overlay": true
-    },
-    "extension_independent_review": {
-      "approval_cohorts": 33,
-      "raw_decision_rows": 487,
-      "unique_current_source_body_contexts": 486,
-      "superseding_business_role_decisions_counted_once": 1,
-      "mutually_exclusive_effective_decisions": {
-        "approved": 424,
-        "privacy_deferred": 57,
-        "duplicate_alias": 2,
-        "source_quality_deferred": 3
-      },
-      "approved_unique_publisher_UUIDs": 424,
-      "approved_body_components": 424,
-      "approved_characters": 988158,
-      "approval_manifest_scope": "First33cohorts are new short-source contexts; final2cohorts reassess15 previously held unchanged source versions. Do not call439 newly acquired contexts."
-    },
-    "frozen_capture_context_status_after_exact_prior_review_reuse": {
-      "unique_current_source_body_contexts": 1630,
-      "exact_prior_complete_source_response_body_component_reuses_outside_extension": 3,
-      "prior_approved_reuses": 1,
-      "prior_privacy_deferred_reuses": 2,
-      "unique_current_contexts_with_existing_or_new_decision": 489,
-      "mutually_exclusive_effective_statuses": {
-        "approved": 425,
-        "privacy_deferred": 59,
-        "duplicate_alias": 2,
-        "source_quality_deferred": 3,
-        "pending_context_review": 1141
+    "boe_selected_with_verified_structure": 346,
+    "boe_selected_body_only": 111,
+    "boe_material_quality_deferrals": 11,
+    "court_complete_source_body_components": 920,
+    "court_current_privacy_deferrals": 71,
+    "court_duplicate_alias_bodies_excluded": 6,
+    "legal_completeness_verified": false,
+    "human_or_legal_expert_review_claimed": false,
+    "historical_v02_processing_baseline": {
+      "source_json_files": 468,
+      "source_pdf_files": 468,
+      "parsed_records": 468,
+      "article_heading_sequences_aligned": 350,
+      "exact_dom_article_span_rows": 9305,
+      "structure_deferred": {
+        "no_isolated_pdf_headings": 59,
+        "ambiguous_or_mismatched_sequence": 57,
+        "empty_article_body": 2
       }
     },
-    "coherent_7125_locator_refresh_dispositions": {
-      "approved_body_in_baseline_or_extension": 425,
-      "privacy_deferred": 59,
-      "source_quality_deferred": 4,
-      "duplicate_alias": 2,
-      "captured_body_pending_context_review": 1141,
-      "actual_WAF_historical_PDF_route_pending": 79,
-      "transport_retry_pending_no_source_refusal_inferred": 5410,
-      "not_yet_attempted": 5
-    },
-    "historical_native_pilot": {
-      "approved_historical_versions_examined": 4,
-      "current_API_canonicals_retained": 4,
-      "additional_document_coverage_count": 0
-    },
-    "baseline_and_final_court_release_projection": {
-      "baseline_body_records_before_additional_alias": 480,
-      "baseline_body_components_before_additional_alias": 481,
-      "independently_confirmed_additional_baseline_alias_bodies_withheld": 1,
-      "baseline_body_records_after_alias": 479,
-      "extension_approved_body_records": 439,
-      "final_court_publication_body_records": 918,
-      "final_court_body_components": 920,
-      "final_unique_publisher_source_ids": 918,
-      "final_court_text_characters": 1542280,
-      "native_pilot_versions_added_to_body_count": 0,
-      "projection_note": "Final immutable35-cohort approval manifest plus baseline480 minus independently confirmed baseline alias:479+424+15=918court publication body rows;480+424+16=920complete decision components. Collection-wide semantic judgment count remains unknown.",
-      "new_short_capture_approved_body_records": 424,
-      "reassessed_original_held_approved_body_records": 15
-    },
-    "effective_privacy_hold_union_across_original_and_extension_review": {
-      "initial_held_source_versions": 30,
-      "initial_hold_superseded_by_exact_source_version_approval": 16,
-      "new_extension_privacy_deferred_versions": 57,
-      "effective_unique_held_source_versions": 71,
-      "note": "30initialheld currentAPI source versions +57short-extensionholds −1alreadyreconsidered −15newlyreassessed approvals =71. This is the reviewed currentAPI scope; historical unmasked PDF variants or unreviewed material are not silently cleared."
-    },
     "limitations": [
-      "Native/JSON processing and software invariants do not establish accurate visual extraction or privacy clearance.",
-      "Unreviewed source-traceable bodies remain pending contextual/quality review; they are not categorically rights rejected.",
-      "Publisher wording, numbers, dates, masking and source contradictions are retained with flags; no local body redactions or inferred negations are added.",
-      "A current-source capture is a new capture receipt, not necessarily a new legal document or additional coverage."
+      "Preserved DOM may omit list numbering, list items, illustrations or annex content.",
+      "Article-offset integrity does not establish completeness or legal validity.",
+      "Newlines and paragraph structure lost upstream are not restored.",
+      "These counts describe byte/native processing and selected reviewed publication; they do not clear every underlying body."
     ],
-    "short_capture_33_cohort_manifest_sha256": "f1e94c2b10b2fddda80e6ed1ed3d570fddabd8dcbd1dcefda774389357f1ba2e",
-    "all_final_approved_additions": {
-      "approved_cohorts": 35,
-      "approved_body_records": 439,
-      "approved_body_components": 440,
-      "approved_characters": 1051013,
-      "new_short_capture_approved_records": 424,
-      "reassessed_original_held_approved_records": 15,
-      "reassessed_original_held_components": 16,
-      "additional_network_acquisitions_for_reassessment": 0,
-      "raw_decision_rows_in_35_cohorts": 502,
-      "distinct_contexts_in_35_cohort_decision_files": 501,
-      "note": "The 15 added source versions were already captured and previously context reviewed; later precise role/privacy decisions supersede those holds."
-    },
-    "original30_contextual_reassessment": {
-      "original_held_source_versions": 30,
-      "already_superseded_inside_short_486_review": 1,
-      "additional_original_held_versions_now_independently_approved": 15,
-      "original_holds_remaining": 14,
-      "raw_response_and_body_hashes_preserved_for_all15": true,
-      "current_refresh_capture_contexts_added": 0
-    },
-    "effective_review_union_short_contexts_plus_original30": {
-      "unique_source_body_versions": 515,
-      "effective_nonoverlapping_decisions": {
-        "approved": 439,
-        "privacy_deferred": 71,
-        "duplicate_alias": 2,
-        "source_quality_deferred": 3
+    "full_court_inventory_byte_native_JSON_processing_complete": true,
+    "full_court_inventory_contextual_clearance_complete": false,
+    "court_inventory_and_review": {
+      "evidence_version": "final-decision-overlay-2026-10-23-v2",
+      "as_of_utc": "2026-10-23T21:32:13.411683+00:00",
+      "approval_manifest_sha256": "f95317f1ebe1f4d3d3baae66ecd38aea50cf6b85b3130dd8d4df581e9ea1bbea",
+      "capture_checkpoint_sha256": "a2e38d390d579078f6aeca0b2b9b19f314ef0e637a04e39c48eb6dde850955ae",
+      "original_inventory": {
+        "files_examined": 38011,
+        "bytes_hashed": 4962953045,
+        "distinct_file_hashes": 37832,
+        "unavailable_files": 0,
+        "size_or_mtime_changes": 0,
+        "families": {
+          "grievances_compilation_pdf": {
+            "enumerated_files": 17,
+            "bytes_enumerated": 2339356797,
+            "files_byte_hashed": 17,
+            "distinct_file_hashes": 17,
+            "excess_exact_file_copies": 0,
+            "native_or_JSON_texts_processed": 17,
+            "distinct_exact_raw_text_groups": 17,
+            "excess_exact_raw_text_copies": 0,
+            "native_or_JSON_processing_statuses": {
+              "pdf_native_extracted": 17
+            },
+            "PDF_pages": 8866,
+            "PDF_parse_error_fields": 0,
+            "empty_or_portal_shell_under100_characters": 0,
+            "zero_native_Arabic_files": 17,
+            "files_with_presentation_forms": 0,
+            "files_with_replacement_characters": 0,
+            "substantive_exact_native_text_groups_not_judgment_count": 0,
+            "nonoverlapping_file_dispositions": {
+              "primary_scanned_volume_no_usable_native_Arabic": 17
+            },
+            "sum_file_dispositions": 17
+          },
+          "moj_cases_derived_json": {
+            "enumerated_files": 4926,
+            "bytes_enumerated": 82356532,
+            "files_byte_hashed": 4926,
+            "distinct_file_hashes": 4926,
+            "excess_exact_file_copies": 0,
+            "native_or_JSON_texts_processed": 4926,
+            "distinct_exact_raw_text_groups": 4017,
+            "excess_exact_raw_text_copies": 909,
+            "native_or_JSON_processing_statuses": {
+              "json_parsed": 4926
+            },
+            "PDF_pages": 0,
+            "PDF_parse_error_fields": 0,
+            "empty_or_portal_shell_under100_characters": 0,
+            "zero_native_Arabic_files": 0,
+            "files_with_presentation_forms": 4926,
+            "files_with_replacement_characters": 0,
+            "substantive_exact_native_text_groups_not_judgment_count": 4017,
+            "nonoverlapping_file_dispositions": {
+              "primary_derived_representation_of_existing_PDF": 4017,
+              "secondary_exact_raw_text_copy": 909
+            },
+            "sum_file_dispositions": 4926
+          },
+          "moj_cases_pdf": {
+            "enumerated_files": 32896,
+            "bytes_enumerated": 2101838582,
+            "files_byte_hashed": 32896,
+            "distinct_file_hashes": 32717,
+            "excess_exact_file_copies": 179,
+            "native_or_JSON_texts_processed": 32896,
+            "distinct_exact_raw_text_groups": 21114,
+            "excess_exact_raw_text_copies": 11782,
+            "native_or_JSON_processing_statuses": {
+              "pdf_native_extracted": 32896
+            },
+            "PDF_pages": 77385,
+            "PDF_parse_error_fields": 0,
+            "empty_or_portal_shell_under100_characters": 365,
+            "zero_native_Arabic_files": 0,
+            "files_with_presentation_forms": 4775,
+            "files_with_replacement_characters": 0,
+            "substantive_exact_native_text_groups_not_judgment_count": 21113,
+            "nonoverlapping_file_dispositions": {
+              "primary_substantive_native_text_group_with_strict_current_publisher_identity": 15562,
+              "secondary_exact_raw_text_copy": 11603,
+              "primary_substantive_native_text_group_without_unique_current_identity": 5551,
+              "primary_empty_or_low_native_capture": 1,
+              "secondary_exact_file_copy": 179
+            },
+            "sum_file_dispositions": 32896
+          },
+          "qadha_derived_json": {
+            "enumerated_files": 86,
+            "bytes_enumerated": 47541254,
+            "files_byte_hashed": 86,
+            "distinct_file_hashes": 86,
+            "excess_exact_file_copies": 0,
+            "native_or_JSON_texts_processed": 86,
+            "distinct_exact_raw_text_groups": 86,
+            "excess_exact_raw_text_copies": 0,
+            "native_or_JSON_processing_statuses": {
+              "json_parsed": 86
+            },
+            "PDF_pages": 0,
+            "PDF_parse_error_fields": 0,
+            "empty_or_portal_shell_under100_characters": 0,
+            "zero_native_Arabic_files": 0,
+            "files_with_presentation_forms": 42,
+            "files_with_replacement_characters": 27,
+            "substantive_exact_native_text_groups_not_judgment_count": 86,
+            "nonoverlapping_file_dispositions": {
+              "primary_derived_representation_of_existing_PDF": 86
+            },
+            "sum_file_dispositions": 86
+          },
+          "qadha_unverified_pdf": {
+            "enumerated_files": 86,
+            "bytes_enumerated": 391859880,
+            "files_byte_hashed": 86,
+            "distinct_file_hashes": 86,
+            "excess_exact_file_copies": 0,
+            "native_or_JSON_texts_processed": 86,
+            "distinct_exact_raw_text_groups": 86,
+            "excess_exact_raw_text_copies": 0,
+            "native_or_JSON_processing_statuses": {
+              "pdf_native_extracted": 86
+            },
+            "PDF_pages": 22592,
+            "PDF_parse_error_fields": 0,
+            "empty_or_portal_shell_under100_characters": 0,
+            "zero_native_Arabic_files": 1,
+            "files_with_presentation_forms": 51,
+            "files_with_replacement_characters": 33,
+            "substantive_exact_native_text_groups_not_judgment_count": 85,
+            "nonoverlapping_file_dispositions": {
+              "primary_third_party_compilation_official_text_commentary_boundaries_and_reuse_unresolved": 86
+            },
+            "sum_file_dispositions": 86
+          }
+        },
+        "semantic_unique_judgments_collection_wide": null,
+        "semantic_unique_judgments_reason": "Exact PDFs, native text groups, source publication locators, case identifiers and legal judgments are different units. Ambiguous headers and multiple judgment/appeal bodies prevent a supported collection-wide semantic judgment count."
       },
-      "counts_are_source_versions_not_review_events": true
-    },
-    "known_independently_confirmed_publication_alias_bodies": {
-      "initial_Supreme_aliases_already_absent_baseline": 3,
-      "new_baseline_alias_removed_from_480": 1,
-      "new_short_context_aliases": 2,
-      "total_known_alias_bodies_withheld": 6,
-      "not_equivalent_to_exact_PDF_or_native_text_copy_counts": true
+      "source_traceable_non_supreme_native_processing": {
+        "distinct_publisher_locators": 15163,
+        "source_locator_plus_native_versions": 15344,
+        "source_PDF_paths": 22523,
+        "versions_with_complete_outer_body": 15090,
+        "complete_nonempty_body_components": 18301,
+        "versions_with_unresolved_outer_boundary": 254,
+        "native_cache_unavailable": 0,
+        "short_complete_context_selection_versions": 7148,
+        "short_complete_context_selection_locators": 7125
+      },
+      "frozen_current_capture": {
+        "main_current_API_body_records": 1624,
+        "separate_transparent_span_repair_body_records": 6,
+        "unique_current_publisher_UUIDs_after_sidecar": 1630,
+        "all_current_body_components": 1636,
+        "all_current_body_characters": 3763913,
+        "span_sidecar_supersedes_old_engineering_projection_failures": 6,
+        "current_captures_are_not_all_new_coverage": true,
+        "main_checkpoint_is_unchanged_by_decision_overlay": true
+      },
+      "extension_independent_review": {
+        "approval_cohorts": 33,
+        "raw_decision_rows": 487,
+        "unique_current_source_body_contexts": 486,
+        "superseding_business_role_decisions_counted_once": 1,
+        "mutually_exclusive_effective_decisions": {
+          "approved": 424,
+          "privacy_deferred": 57,
+          "duplicate_alias": 2,
+          "source_quality_deferred": 3
+        },
+        "approved_unique_publisher_UUIDs": 424,
+        "approved_body_components": 424,
+        "approved_characters": 988158,
+        "approval_manifest_scope": "First33cohorts are new short-source contexts; final2cohorts reassess15 previously held unchanged source versions. Do not call439 newly acquired contexts."
+      },
+      "frozen_capture_context_status_after_exact_prior_review_reuse": {
+        "unique_current_source_body_contexts": 1630,
+        "exact_prior_complete_source_response_body_component_reuses_outside_extension": 3,
+        "prior_approved_reuses": 1,
+        "prior_privacy_deferred_reuses": 2,
+        "unique_current_contexts_with_existing_or_new_decision": 489,
+        "mutually_exclusive_effective_statuses": {
+          "approved": 425,
+          "privacy_deferred": 59,
+          "duplicate_alias": 2,
+          "source_quality_deferred": 3,
+          "pending_context_review": 1141
+        }
+      },
+      "coherent_7125_locator_refresh_dispositions": {
+        "approved_body_in_baseline_or_extension": 425,
+        "privacy_deferred": 59,
+        "source_quality_deferred": 4,
+        "duplicate_alias": 2,
+        "captured_body_pending_context_review": 1141,
+        "actual_WAF_historical_PDF_route_pending": 79,
+        "transport_retry_pending_no_source_refusal_inferred": 5410,
+        "not_yet_attempted": 5
+      },
+      "historical_native_pilot": {
+        "approved_historical_versions_examined": 4,
+        "current_API_canonicals_retained": 4,
+        "additional_document_coverage_count": 0
+      },
+      "baseline_and_final_court_release_projection": {
+        "baseline_body_records_before_additional_alias": 480,
+        "baseline_body_components_before_additional_alias": 481,
+        "independently_confirmed_additional_baseline_alias_bodies_withheld": 1,
+        "baseline_body_records_after_alias": 479,
+        "extension_approved_body_records": 439,
+        "final_court_publication_body_records": 918,
+        "final_court_body_components": 920,
+        "final_unique_publisher_source_ids": 918,
+        "final_court_text_characters": 1542280,
+        "native_pilot_versions_added_to_body_count": 0,
+        "projection_note": "Final immutable35-cohort approval manifest plus baseline480 minus independently confirmed baseline alias:479+424+15=918court publication body rows;480+424+16=920complete decision components. Collection-wide semantic judgment count remains unknown.",
+        "new_short_capture_approved_body_records": 424,
+        "reassessed_original_held_approved_body_records": 15
+      },
+      "effective_privacy_hold_union_across_original_and_extension_review": {
+        "initial_held_source_versions": 30,
+        "initial_hold_superseded_by_exact_source_version_approval": 16,
+        "new_extension_privacy_deferred_versions": 57,
+        "effective_unique_held_source_versions": 71,
+        "note": "30initialheld currentAPI source versions +57short-extensionholds −1alreadyreconsidered −15newlyreassessed approvals =71. This is the reviewed currentAPI scope; historical unmasked PDF variants or unreviewed material are not silently cleared."
+      },
+      "limitations": [
+        "Native/JSON processing and software invariants do not establish accurate visual extraction or privacy clearance.",
+        "Unreviewed source-traceable bodies remain pending contextual/quality review; they are not categorically rights rejected.",
+        "Publisher wording, numbers, dates, masking and source contradictions are retained with flags; no local body redactions or inferred negations are added.",
+        "A current-source capture is a new capture receipt, not necessarily a new legal document or additional coverage."
+      ],
+      "short_capture_33_cohort_manifest_sha256": "f1e94c2b10b2fddda80e6ed1ed3d570fddabd8dcbd1dcefda774389357f1ba2e",
+      "all_final_approved_additions": {
+        "approved_cohorts": 35,
+        "approved_body_records": 439,
+        "approved_body_components": 440,
+        "approved_characters": 1051013,
+        "new_short_capture_approved_records": 424,
+        "reassessed_original_held_approved_records": 15,
+        "reassessed_original_held_components": 16,
+        "additional_network_acquisitions_for_reassessment": 0,
+        "raw_decision_rows_in_35_cohorts": 502,
+        "distinct_contexts_in_35_cohort_decision_files": 501,
+        "note": "The 15 added source versions were already captured and previously context reviewed; later precise role/privacy decisions supersede those holds."
+      },
+      "original30_contextual_reassessment": {
+        "original_held_source_versions": 30,
+        "already_superseded_inside_short_486_review": 1,
+        "additional_original_held_versions_now_independently_approved": 15,
+        "original_holds_remaining": 14,
+        "raw_response_and_body_hashes_preserved_for_all15": true,
+        "current_refresh_capture_contexts_added": 0
+      },
+      "effective_review_union_short_contexts_plus_original30": {
+        "unique_source_body_versions": 515,
+        "effective_nonoverlapping_decisions": {
+          "approved": 439,
+          "privacy_deferred": 71,
+          "duplicate_alias": 2,
+          "source_quality_deferred": 3
+        },
+        "counts_are_source_versions_not_review_events": true
+      },
+      "known_independently_confirmed_publication_alias_bodies": {
+        "initial_Supreme_aliases_already_absent_baseline": 3,
+        "new_baseline_alias_removed_from_480": 1,
+        "new_short_context_aliases": 2,
+        "total_known_alias_bodies_withheld": 6,
+        "not_equivalent_to_exact_PDF_or_native_text_copy_counts": true
+      }
     }
   }
 }

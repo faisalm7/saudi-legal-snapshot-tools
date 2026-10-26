@@ -1,59 +1,67 @@
-# Saudi legal snapshot tools · v0.4.0
+# Saudi legal snapshot tools · v0.5.0
 
-Load and inspect source-traceable Arabic legal text from the [Saudi legal text snapshots dataset](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots). The release contains **1,451 source publication records**: 457 BOE bodies, 76 MOJ legislative/instrument publications and 918 court publications. Article and section tables are separate. These are selected captured versions, with overlap between sources; the total is not a count of unique laws or cases or a complete/current statement of Saudi law.
+Search Arabic legal wording, read the matching passage in its source context and follow the official citation. This release provides **9,308 source publication snapshots**: 468 from the Bureau of Experts, 76 MOJ instrument publications and 8,764 court publications. The article tables contain **13,863 spans**, separately from their parent documents. Ninety-six official annex image pages preserve useful material that would be lost in plain text.
 
-| Dataset configuration · split `corpus` | Rows | Meaning |
-| --- | ---: | --- |
-| `boe_documents` | 457 | Selected historical BOE bodies; four parents have documented source-backed completions |
-| `boe_article_spans` | 9,150 | Exact source-evidenced slices in 346 BOE bodies; 111 bodies have no verified article table |
-| `laws` | 76 | Current MOJ legislative/instrument publication records; not all are statutes |
-| `article_spans` | 4,505 | Explicit MOJ source article units |
-| `source_sections` | 1,605 | Useful other MOJ source units, including enactment/structural content |
-| `judgments` | 918 | Reviewed court publication records containing 920 populated source body components |
+I collected the original material in 2025 for an earlier legal AI project, and I directed this release to make that collection useful to other developers. Codex assisted with extraction, source comparisons, contextual assessment, code and documentation. Independent review here means a separate AI-agent pass; it is not a claim that I manually read every source or that a lawyer certified the data.
 
-## Load and inspect real text
+[Get the text dataset](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots) · [Coverage and quality](docs/quality.md) · [Rights and source conditions](docs/source-rights.md)
 
-From this repository, use CPython 3.12:
+## Try the real data
+
+Use CPython 3.12 from this repository:
 
 ```bash
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements.lock
 .venv/bin/python -m pip install --no-deps .
-.venv/bin/python examples/texts.py --config boe_documents --query 'لا يجوز' --limit 2
-.venv/bin/python scripts/verify_text_release.py --dataset Faisal73/saudi-legal-text-snapshots
+.venv/bin/python examples/texts.py --config article_spans --query 'لا يجوز' --show-parent --limit 1
+.venv/bin/python examples/texts.py --config judgments --query 'المحرر العادي' --court 'التجارية' --city 'الرياض' --limit 2
 ```
 
-The example loads real published text without authentication, searches it lexically and prints genuine official citations. Add `--open-source` to open a matching source. The verifier checks published text/projection hashes, native structure, membership and exact offsets. Neither evaluates legal correctness or retrieval accuracy, nor retrieves the original official source bytes. Add `--revision COMMIT_SHA` to either command to pin a dataset commit. Loading this release needs no private inputs, Poppler or model service.
+The first command prints the actual matching article wording, its offset in the complete parent, parent metadata and the official article citation. The second searches court text after filtering the source's court and city fields. Add `--open-source` to open the first official citation. `--captured-from` and `--captured-before` filter capture dates, not legal commencement dates; unknown dates do not match. Search folds Arabic diacritics, tatweel and alef variants while preserving the displayed original wording.
 
-You can also load the Parquet-backed dataset directly:
+[Executed examples](docs/text-examples.md) include actual outputs and source links. Loading needs no login, private corpus, model service, training or Poppler. The example is a small lexical search demonstration, without a retrieval-accuracy claim.
 
 ```python
 from datasets import load_dataset
-rows = load_dataset("Faisal73/saudi-legal-text-snapshots",
-                    name="judgments", split="corpus", token=False)
-print(len(rows), rows[0]["source_url"])
+cases = load_dataset("Faisal73/saudi-legal-text-snapshots",
+                     name="judgments", split="corpus", token=False)
+print(len(cases), cases[0]["source_url"])
 ```
 
-## Process your own compatible captures
+Use `--revision COMMIT_SHA` with the example or `revision="COMMIT_SHA"` with `load_dataset` to pin a release. Exact published commits are recorded in the release notes.
 
-The CLI operates on files you already acquired; it does not scrape or publish:
+## What's included
 
-- `capture-text`: wrap a supplied UTF-8 BOE page/body with a source URL and aware capture timestamp.
-- `audit-capture`, then `refine-capture`: preserve captured bodies, align isolated PDF headings to exact offsets, and apply only documented source-backed refinement decisions. Poppler `pdftotext` is required for PDF extraction.
-- `capture-moj-case` / `capture-moj-legislation`: validate saved official API responses, preserve complete populated body fields or the native legislative hierarchy, and record source hashes.
-- `prepare-text-release`: export only projections supported by exact rights, privacy, quality and metadata/structure review bindings. The gate validates supplied evidence fields; it cannot establish that their claims are true.
+| Configuration · split `corpus` | Rows | What a row means |
+| --- | ---: | --- |
+| `boe_documents` | 468 | A selected BOE publication snapshot |
+| `boe_article_spans` | 9,358 | An exact source-evidenced slice of a BOE parent |
+| `laws` | 76 | A MOJ legislative or other official instrument publication |
+| `article_spans` | 4,505 | An explicit article unit in the MOJ hierarchy |
+| `source_sections` | 1,605 | Another useful MOJ source unit |
+| `judgments` | 8,764 | A reviewed court publication, sometimes containing more than one decision field |
 
-[Reproduction commands and limits](docs/reproducibility.md) describe the inputs. Historical acquisition/recovery scripts, raw API responses/PDFs, private contexts and original 2025 captures are not shipped. A current download can be a different source version. The earlier [468-row factual catalogue](https://huggingface.co/datasets/Faisal73/saudi-legal-source-catalogue-2025) remains a separate metadata resource.
+The court rows contain 9,006 populated source body components. BOE spans are verified in 352 parents; 116 parents have no verified article table. Those unknown boundaries do not produce empty article rows. The 96 annex pages belong to six BOE parents and are listed in the dataset's `boe-annex-pages.jsonl`; they are separate historical source assets, not OCR text or additional laws.
 
-## Quality, rights and development
+Compared with v0.4.0, this candidate adds 7,846 court publications, 11 BOE publications and 208 BOE spans. Counts are generated from the actual Parquet artifacts in [coverage.json](docs/coverage.json). The separate [468-row metadata catalogue](https://huggingface.co/datasets/Faisal73/saudi-legal-source-catalogue-2025) remains available.
 
-BOE captures can omit rendered numbering or flatten tables. Eleven materially incomplete bodies are withheld; remaining limitations are flagged. Four original-base instruments have five separately dated official-image passage completions with explicit version/correction provenance. Court contexts were reviewed individually; 71 reviewed current source versions remain private and six duplicate aliases supply body-free relations. All 38,011 original court-family files were byte/native/JSON processed; most are not contextually cleared for publication. A source body component is a publisher field or PDF body, not necessarily one semantic judgment. Publisher masks are preserved; this is not an anonymity certificate. See [quality](docs/quality.md), [court review](docs/court-audit.md) and [comparison](docs/comparison.md).
+These are captured versions, with overlap between sources and proceedings. File copies, article chunks and annex pages are not extra documents. Distinct publication identifiers do not establish a count of unique laws or cases. The data is useful for text access, source inspection and experiments that account for its limits; it is not a current consolidated statement of Saudi law.
 
-MIT covers new code, documentation and invented test fixtures. Actual official text uses the [source-specific statutory/policy basis and conditions](docs/source-rights.md), also recorded in the dataset's `RIGHTS.md`; it is not relicensed under MIT or the catalogue's CC0 dedication. No synthetic fixture or original PDF is included in the text dataset.
+Publisher wording, masks, dates, numbers, negations and source inconsistencies are preserved. Some source publications themselves contain contradictory amounts, clipped phrases or inconsistent metadata; those limitations are flagged rather than silently repaired. Historical versions and later annex evidence have explicit scope notices. Publisher masks do not guarantee anonymity. Specific unresolved records stay private.
+
+## Use your own captures
+
+The CLI processes files you supply. `capture-moj-case` and `capture-moj-legislation` accept saved supported official API responses; `capture-text` accepts a supplied BOE page or isolated body. `audit-capture` and `refine-capture` preserve source evidence and apply explicit source-backed decisions. `prepare-text-release` exports only exact projections with supported rights, quality and privacy review bindings. It validates the supplied decisions; it cannot establish that their claims are true.
+
+See [commands and input requirements](docs/reproducibility.md). PDF extraction needs separately installed Poppler. Historical acquisition scripts, the private 2025 captures, raw responses/PDFs and contextual review notes are not distributed. A new official download can be a different version, so the full historical collection cannot be reconstructed from this toolkit alone.
 
 ```bash
+.venv/bin/python scripts/verify_text_release.py --dataset Faisal73/saudi-legal-text-snapshots
 .venv/bin/python -m pytest -q -p no:cacheprovider -o pythonpath=
 HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 .venv/bin/python scripts/fixture_demo.py --output demo-work
 ```
 
-The offline fixture uses invented Arabic and a synthetic BOE-shaped identifier that is never fetched; it demonstrates software behavior separately from the real dataset example. Development, source assessment, testing and independent agent review were AI assisted. No government affiliation, human/legal-expert certification or expert accuracy benchmark is claimed. [Architecture and tradeoffs](docs/decision-record.md).
+The verifier checks every public text/projection hash, exact article/component slice, native hierarchy and annex asset binding. It does not fetch original source bytes or certify legal correctness. The offline fixture uses clearly invented Arabic and a synthetic identifier that is never fetched; it demonstrates extraction separately from the real-data example.
+
+MIT covers new code, original documentation and invented fixtures. Official text and the narrowly selected normative annex facsimiles use the [separate statutory/policy basis](docs/source-rights.md), not an MIT or CC0 relicensing. Third-party notices remain. [Historical comparisons](docs/comparison.md) and [processing evidence](docs/court-audit.md) explain the contribution without assuming it is novel or more accurate than other datasets.
