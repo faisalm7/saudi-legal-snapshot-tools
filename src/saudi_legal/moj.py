@@ -194,6 +194,15 @@ def capture_case(response_file,source_url,captured_at,output):
             'source_fetched':False,'publication_permission_inferred':False}
 
 
+HISTORICAL_APPEAL_SELECTION_TYPE='commercial_court_historical_appeal_context_selection'
+HISTORICAL_APPEAL_SELECTION_NOTICE=(
+    'Only the complete appeal context is transcribed; the original PDF also contains '
+    'a complete judgment context that is withheld. All original PDF pages were reviewed.')
+HISTORICAL_APPEAL_SELECTION_FLAGS={
+    'complete_appeal_context_selected_from_combined_historical_PDF',
+    'other_complete_judgment_context_withheld_no_full_PDF_transcription_claim'}
+
+
 def validate_case_components(row):
     """Check reviewed body boundaries and the declared source evidence shape.
 
@@ -201,6 +210,10 @@ def validate_case_components(row):
     verification of private PDF bytes. They never stand in for source HTML.
     """
     encoded=row.get('source_components_json')
+    if (row.get('document_type')==HISTORICAL_APPEAL_SELECTION_TYPE
+        and (not encoded or row.get('extraction_method')!=
+             'official_historical_pdf_complete_visual_transcription_v1')):
+        raise ValueError('Historical appeal selection requires its explicit PDF component evidence')
     # Earlier reviewed PDF editions have no nested component representation.
     # Keep that existing path; the new opaque-route/page-claim shape is explicit.
     historical=(row.get('extraction_method')=='official_historical_pdf_complete_visual_transcription_v1'
@@ -238,7 +251,8 @@ def validate_case_components(row):
 def _validate_historical_pdf_identity(row,components):
     """Check one complete first-instance, appeal-only, or combined PDF edition."""
     digest=row.get('source_pdf_sha256');pages=row.get('source_pdf_pages')
-    appeal=row.get('document_type')=='commercial_court_historical_appeal'
+    selection=row.get('document_type')==HISTORICAL_APPEAL_SELECTION_TYPE
+    appeal=row.get('document_type')=='commercial_court_historical_appeal' or selection
     combined=row.get('document_type')=='commercial_court_historical_judgment_and_appeal'
     if (not isinstance(digest,str) or not re.fullmatch('[0-9a-f]{64}',digest)
         or row.get('source_file_sha256')!=digest or type(pages) is not int or pages<1):
@@ -246,14 +260,14 @@ def _validate_historical_pdf_identity(row,components):
     if (row.get('source_identity_kind')!='frozen_official_opaque_route_and_exact_historical_PDF_no_model_UUID'
         or row.get('source_capture_kind')!='historical_official_PDF_capture_date_unknown'
         or row.get('document_type') not in ('commercial_court_historical_judgment','commercial_court_historical_appeal',
-                'commercial_court_historical_judgment_and_appeal')
+                'commercial_court_historical_judgment_and_appeal',HISTORICAL_APPEAL_SELECTION_TYPE)
         or row.get('source_family')!='moj_judgments'
         or row.get('capture_timestamp_utc') is not None or row.get('source_api_url') is not None
         or row.get('judgment_gregorian_date_raw') is not None or row.get('source_body_html_sha256') is not None):
         raise ValueError('Unsupported historical PDF identity or capture claim')
     parsed=urlparse(row.get('source_url') or '')
     route=row.get('opaque_route_id')
-    route_kind='0' if appeal else '1'
+    route_kind='0' if appeal and not selection else '1'
     if (parsed.scheme!='https' or parsed.netloc!='laws.moj.gov.sa' or parsed.query or parsed.fragment
         or not isinstance(route,str) or not re.fullmatch('[A-Za-z0-9_=-]+',route)
         or parsed.path!='/ar/JudicialDecisionsList/'+route_kind+'/'+route or row.get('source_id')!=route):
@@ -311,6 +325,9 @@ def _validate_historical_pdf_identity(row,components):
             or not page_list(component['complete_document_pages_inspected'])):
             raise ValueError('Historical PDF requires exact component pages and whole-document inspection')
         used.update(component_pages)
+    if selection:
+        _validate_historical_appeal_selection(row,components[0],corrections,page_list,whole)
+        return
     if used & set(blank) or sorted(used | set(blank))!=whole:
         raise ValueError('Historical PDF requires exact component pages and whole-document inspection')
     if combined:
@@ -342,3 +359,88 @@ def _validate_historical_pdf_identity(row,components):
                 or d['source_pdf_pages']!=c.get('source_pdf_pages')):
                 raise ValueError('Combined historical PDF native/component derivation mismatch')
             previous_end=pair[1]
+
+
+def _validate_historical_appeal_selection(row,component,corrections,page_list,whole):
+    """Bind a complete selected appeal to both reviewed original PDF contexts.
+
+    These are structured, body-free review claims. Exact private source replay and
+    the external whole-projection decision registry remain required; this checker
+    cannot establish the truth of a newly supplied source hash or withheld reason.
+    """
+    s=corrections.get('source_context_selection')
+    keys={'kind','source_pdf_sha256','original_source_url','original_pdf_pages',
+          'all_original_pdf_pages_inspected','whole_native_text_sha256','whole_native_characters',
+          'original_contexts','excluded_nonjudicial_native_ranges',
+          'canonical_selected_component_sha256','selected_raw_body_sha256',
+          'selected_proposed_body_sha256','selection_notice'}
+    digest=lambda v:isinstance(v,str) and re.fullmatch('[0-9a-f]{64}',v) is not None
+    if (not isinstance(s,dict) or set(s)!=keys
+        or s['kind']!='complete_appeal_from_original_judgment_and_appeal_PDF_v1'
+        or s['source_pdf_sha256']!=row['source_pdf_sha256']
+        or s['original_source_url']!=row['source_url']
+        or type(s['original_pdf_pages']) is not int or s['original_pdf_pages']!=len(whole)
+        or not page_list(s['all_original_pdf_pages_inspected'])
+        or s['all_original_pdf_pages_inspected']!=whole
+        or not digest(s['whole_native_text_sha256'])
+        or type(s['whole_native_characters']) is not int or s['whole_native_characters']<2
+        or s['canonical_selected_component_sha256']!=sha256(canonical(component).encode())
+        or s['selected_raw_body_sha256']!=row['native_body_text_sha256']
+        or s['selected_proposed_body_sha256']!=component['text_sha256']
+        or s['selection_notice']!=HISTORICAL_APPEAL_SELECTION_NOTICE
+        or row.get('source_version_notice')!=HISTORICAL_APPEAL_SELECTION_NOTICE
+        or not isinstance(row.get('quality_flags'),list)
+        or any(not isinstance(flag,str) for flag in row['quality_flags'])
+        or not HISTORICAL_APPEAL_SELECTION_FLAGS.issubset(row['quality_flags'])):
+        raise ValueError('Historical appeal selection provenance or selected component mismatch')
+    if ('whole_native_sha256' in corrections
+        and (not digest(corrections['whole_native_sha256'])
+             or corrections['whole_native_sha256']!=s['whole_native_text_sha256'])):
+        raise ValueError('Historical appeal selection whole-native hash claims disagree')
+    contexts=s['original_contexts'];gaps=s['excluded_nonjudicial_native_ranges']
+    context_keys={'decision_level','native_offsets','raw_body_characters','raw_body_sha256',
+                  'source_pdf_pages','complete_context','disposition','withheld_reason'}
+    gap_keys={'native_offsets','raw_sha256','characters','kind'}
+    def interval(value):
+        return (isinstance(value,list) and len(value)==2 and all(type(v) is int for v in value)
+                and 0<=value[0]<value[1]<=s['whole_native_characters'])
+    if not isinstance(contexts,list) or len(contexts)!=2 or not isinstance(gaps,list):
+        raise ValueError('Historical appeal selection needs both original complete contexts')
+    previous_end=0;original_pages=set();ranges=[]
+    for c,level,state in zip(contexts,('judgment','appeal'),('withheld','selected')):
+        if (not isinstance(c,dict) or set(c)!=context_keys
+            or c['decision_level']!=level or c['disposition']!=state or c['complete_context'] is not True
+            or not interval(c['native_offsets']) or c['native_offsets'][0]<previous_end
+            or type(c['raw_body_characters']) is not int
+            or c['raw_body_characters']!=c['native_offsets'][1]-c['native_offsets'][0]
+            or not digest(c['raw_body_sha256'])
+            or not page_list(c['source_pdf_pages']) or not c['source_pdf_pages']):
+            raise ValueError('Historical appeal selection original context bounds or pages mismatch')
+        if level=='judgment':
+            if c['withheld_reason'] not in ('specific_source_context_privacy_hold',
+                    'specific_source_context_quality_hold','separate_complete_context_not_selected_for_release'):
+                raise ValueError('Historical appeal selection needs an explicit body-free withheld reason')
+        elif (c['withheld_reason'] is not None or c['raw_body_sha256']!=s['selected_raw_body_sha256']
+              or c['source_pdf_pages']!=component['source_pdf_pages']):
+            raise ValueError('Historical appeal selection does not bind the original complete appeal')
+        previous_end=c['native_offsets'][1];ranges.append(c['native_offsets']);original_pages.update(c['source_pdf_pages'])
+    if 'stored_native_body_offsets' in corrections:
+        offsets=corrections['stored_native_body_offsets']
+        if (not isinstance(offsets,list) or len(offsets)!=1 or not interval(offsets[0])
+            or offsets[0]!=contexts[1]['native_offsets']):
+            raise ValueError('Historical appeal selection stored offsets must bind its selected original appeal')
+    previous_end=0
+    for g in gaps:
+        if (not isinstance(g,dict) or set(g)!=gap_keys or not interval(g['native_offsets'])
+            or g['native_offsets'][0]<previous_end or not digest(g['raw_sha256'])
+            or type(g['characters']) is not int or g['characters']!=g['native_offsets'][1]-g['native_offsets'][0]
+            or g['kind']!='publisher_portal_metadata_or_whitespace'):
+            raise ValueError('Historical appeal selection needs exact nonjudicial native range provenance')
+        previous_end=g['native_offsets'][1];ranges.append(g['native_offsets'])
+    end=0
+    for start,stop in sorted(ranges):
+        if start!=end:raise ValueError('Historical appeal selection leaves unbound or overlapping native content')
+        end=stop
+    blank=set(corrections['blank_pages'])
+    if end!=s['whole_native_characters'] or original_pages & blank or sorted(original_pages | blank)!=whole:
+        raise ValueError('Historical appeal selection requires complete original native and PDF page coverage')

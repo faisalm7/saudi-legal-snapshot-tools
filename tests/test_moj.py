@@ -6,6 +6,9 @@ import pytest
 
 from saudi_legal.core import sha256
 from saudi_legal.moj import capture_supreme, decode_supreme_response, decode_case_response, html_body_text, validate_case_components
+from saudi_legal.core import canonical
+from saudi_legal.moj import (HISTORICAL_APPEAL_SELECTION_TYPE,
+    HISTORICAL_APPEAL_SELECTION_NOTICE,HISTORICAL_APPEAL_SELECTION_FLAGS)
 
 
 URL='https://laws.moj.gov.sa/ar/JudicialDecisionsList/3/SYNTHETIC_NOT_A_REAL_SOURCE'
@@ -487,3 +490,202 @@ def test_combined_historical_pdf_cannot_hide_an_uninspected_or_false_blank_page(
     corrections['active_component_body_derivations'][1]['source_pdf_pages']=[1]
     record['source_corrections_json']=json.dumps(corrections)
     with pytest.raises(ValueError):validate_case_components(record)
+
+
+@pytest.fixture
+def historical_selected_appeal(historical_appeal_pdf_record):
+    """Entirely invented two-context PDF; page2 genuinely belongs to both contexts."""
+    r=historical_appeal_pdf_record
+    c=json.loads(r['source_components_json'])[0]
+    c.update(source_pdf_pages=[2,3],complete_document_pages_inspected=[1,2,3])
+    prefix='SYNTHETIC PORTAL HEADER\n';trial='سياق حكم اصطناعي كامل محجوب للاختبار.'
+    middle='\nSYNTHETIC APPEAL PORTAL HEADER\n';appeal=r['text_ar'];suffix='\n'
+    native=prefix+trial+middle+appeal+suffix
+    a=len(prefix);b=a+len(trial);d=b+len(middle);e=d+len(appeal)
+    contexts=[{'decision_level':'judgment','native_offsets':[a,b],
+        'raw_body_characters':len(trial),'raw_body_sha256':sha256(trial.encode()),
+        'source_pdf_pages':[1,2],'complete_context':True,'disposition':'withheld',
+        'withheld_reason':'specific_source_context_privacy_hold'},
+        {'decision_level':'appeal','native_offsets':[d,e],
+        'raw_body_characters':len(appeal),'raw_body_sha256':sha256(appeal.encode()),
+        'source_pdf_pages':[2,3],'complete_context':True,'disposition':'selected','withheld_reason':None}]
+    gaps=[{'native_offsets':pair,'raw_sha256':sha256(native[pair[0]:pair[1]].encode()),
+        'characters':pair[1]-pair[0],'kind':'publisher_portal_metadata_or_whitespace'}
+        for pair in ([0,a],[b,d],[e,len(native)])]
+    r.update(document_type=HISTORICAL_APPEAL_SELECTION_TYPE,
+        source_url=r['source_url'].replace('/0/','/1/'),source_pdf_pages=3,
+        source_version_notice=HISTORICAL_APPEAL_SELECTION_NOTICE,
+        quality_flags=sorted(HISTORICAL_APPEAL_SELECTION_FLAGS),
+        native_body_text_sha256=sha256(appeal.encode()),
+        source_components_json=json.dumps([c],ensure_ascii=False))
+    r['source_corrections_json']=json.dumps({'source_pdf_sha256':r['source_pdf_sha256'],
+        'transcription_sha256':r['text_sha256'],'stored_native_body_sha256':r['native_body_text_sha256'],
+        'complete_source_pages_reviewed':3,'blank_pages':[],
+        'source_context_selection':{'kind':'complete_appeal_from_original_judgment_and_appeal_PDF_v1',
+            'source_pdf_sha256':r['source_pdf_sha256'],'original_source_url':r['source_url'],
+            'original_pdf_pages':3,'all_original_pdf_pages_inspected':[1,2,3],
+            'whole_native_text_sha256':sha256(native.encode()),'whole_native_characters':len(native),
+            'original_contexts':contexts,'excluded_nonjudicial_native_ranges':gaps,
+            'canonical_selected_component_sha256':sha256(canonical(c).encode()),
+            'selected_raw_body_sha256':r['native_body_text_sha256'],
+            'selected_proposed_body_sha256':r['text_sha256'],
+            'selection_notice':HISTORICAL_APPEAL_SELECTION_NOTICE}},ensure_ascii=False)
+    return r
+
+
+def test_selected_complete_appeal_preserves_route1_and_real_mixed_page_coverage(historical_selected_appeal):
+    r=historical_selected_appeal;before=deepcopy(r);validate_case_components(r)
+    assert r==before and '/JudicialDecisionsList/1/' in r['source_url']
+    c=json.loads(r['source_components_json'])[0];s=json.loads(r['source_corrections_json'])['source_context_selection']
+    assert c['source_pdf_pages']==[2,3] and c['complete_document_pages_inspected']==[1,2,3]
+    assert s['original_contexts'][0]['source_pdf_pages']==[1,2]
+    assert s['original_contexts'][1]['source_pdf_pages']==[2,3]
+    assert s['original_contexts'][0]['native_offsets'][1]<s['original_contexts'][1]['native_offsets'][0]
+    assert r['has_judgment'] is False and r['has_appeal'] is True
+    assert all(r[k] is None for k in ('judgment_number','judgment_hijri_date_raw','court_name','city',
+        'capture_timestamp_utc','source_api_url','appeal_gregorian_date_raw'))
+
+
+def test_selected_appeal_can_declare_a_truly_separate_blank_page(historical_selected_appeal):
+    r=historical_selected_appeal;r['source_pdf_pages']=4
+    c=json.loads(r['source_components_json'])[0];c['complete_document_pages_inspected']=[1,2,3,4]
+    p=json.loads(r['source_corrections_json']);p.update(complete_source_pages_reviewed=4,blank_pages=[4])
+    s=p['source_context_selection'];s.update(original_pdf_pages=4,all_original_pdf_pages_inspected=[1,2,3,4],
+        canonical_selected_component_sha256=sha256(canonical(c).encode()))
+    r['source_components_json']=json.dumps([c]);r['source_corrections_json']=json.dumps(p)
+    validate_case_components(r)
+
+
+@pytest.mark.parametrize('failure',[
+    'missing-selection','missing-withheld-context','incomplete-original-context','missing-withheld-reason',
+    'body-in-withheld-metadata','unbound-original-page','false-blank-original-page',
+    'missing-original-page-inspection','native-context-overlap','native-gap-unbound',
+    'native-gap-overlap','native-range-outside-whole','native-character-count-boolean',
+    'unknown-native-gap-role','selected-native-hash-mismatch','selected-proposed-hash-mismatch',
+    'selected-component-digest-stale','selected-page-disagrees-with-original-appeal',
+    'invented-original-source-URL','missing-selection-notice','missing-explicit-flags',
+    'guessed-route0','mixed-inactive-judgment-M','invented-HTML','missing-components',
+    'wrong-extraction-method'])
+def test_selected_appeal_rejects_unbound_partial_or_fabricated_claims(historical_selected_appeal,failure):
+    r=historical_selected_appeal;p=json.loads(r['source_corrections_json']);s=p['source_context_selection']
+    c=json.loads(r['source_components_json'])[0];contexts=s['original_contexts'];gaps=s['excluded_nonjudicial_native_ranges']
+    if failure=='missing-selection':p.pop('source_context_selection')
+    elif failure=='missing-withheld-context':contexts.pop(0)
+    elif failure=='incomplete-original-context':contexts[0]['complete_context']=False
+    elif failure=='missing-withheld-reason':contexts[0]['withheld_reason']=None
+    elif failure=='body-in-withheld-metadata':contexts[0]['text_ar']='Unexpected source wording is forbidden here.'
+    elif failure=='unbound-original-page':contexts[0]['source_pdf_pages']=[2]
+    elif failure=='false-blank-original-page':p['blank_pages']=[1]
+    elif failure=='missing-original-page-inspection':s['all_original_pdf_pages_inspected']=[2,3]
+    elif failure=='native-context-overlap':contexts[1]['native_offsets'][0]=contexts[0]['native_offsets'][1]-1
+    elif failure=='native-gap-unbound':gaps.pop(1)
+    elif failure=='native-gap-overlap':gaps[1]['native_offsets'][0]-=1;gaps[1]['characters']+=1
+    elif failure=='native-range-outside-whole':contexts[1]['native_offsets'][1]=s['whole_native_characters']+1
+    elif failure=='native-character-count-boolean':s['whole_native_characters']=True
+    elif failure=='unknown-native-gap-role':gaps[0]['kind']='unreviewed_substantive_context'
+    elif failure=='selected-native-hash-mismatch':contexts[1]['raw_body_sha256']='0'*64
+    elif failure=='selected-proposed-hash-mismatch':s['selected_proposed_body_sha256']='0'*64
+    elif failure=='selected-component-digest-stale':s['canonical_selected_component_sha256']='0'*64
+    elif failure=='selected-page-disagrees-with-original-appeal':
+        c['source_pdf_pages']=[3];s['canonical_selected_component_sha256']=sha256(canonical(c).encode())
+    elif failure=='invented-original-source-URL':s['original_source_url']=s['original_source_url'].replace('/1/','/0/')
+    elif failure=='missing-selection-notice':r['source_version_notice']='Entire PDF transcription.'
+    elif failure=='missing-explicit-flags':r['quality_flags']=[]
+    elif failure=='guessed-route0':r['source_url']=r['source_url'].replace('/1/','/0/')
+    elif failure=='mixed-inactive-judgment-M':r['judgment_number']='SYNTHETIC_INACTIVE'
+    elif failure=='invented-HTML':r['source_body_html_sha256']='0'*64
+    elif failure=='missing-components':r['source_components_json']=None
+    elif failure=='wrong-extraction-method':r['extraction_method']='official_api_complete_html_fields_v1'
+    if failure!='missing-components':r['source_components_json']=json.dumps([c])
+    r['source_corrections_json']=json.dumps(p)
+    with pytest.raises(ValueError):validate_case_components(r)
+
+
+def test_ordinary_appeal_does_not_gain_selected_page_or_route_exception(historical_selected_appeal):
+    r=historical_selected_appeal;r['document_type']='commercial_court_historical_appeal'
+    with pytest.raises(ValueError):validate_case_components(r)
+    r['source_url']=r['source_url'].replace('/1/','/0/')
+    with pytest.raises(ValueError):validate_case_components(r)
+
+
+def selection_registry(record):
+    from saudi_legal.text_release import projection_sha256
+    return {'decisions':[{'document_id':record['document_id'],'decision':'supported',
+        'source_file_sha256':record['source_file_sha256'],'text_sha256':record['text_sha256'],
+        'projection_sha256':projection_sha256(record),'quality_review':'pass','privacy_review':'pass',
+        'rights_basis':'Synthetic test fixture only.','evidence_urls':['https://example.org/synthetic-fixture'],
+        'reason':'Invented fixture; no source review or publication authority.'}]}
+
+
+def test_prepare_selected_appeal_preserves_exact_reviewed_selection_provenance(tmp_path,historical_selected_appeal):
+    import pyarrow.parquet as pq
+    from saudi_legal.text_release import prepare_moj_text,projection_sha256
+    r=historical_selected_appeal;before=deepcopy(r);digest=projection_sha256(r)
+    candidates=tmp_path/'synthetic.jsonl';candidates.write_text(json.dumps(r,ensure_ascii=False)+'\n')
+    registry=tmp_path/'synthetic-decisions.json';registry.write_text(json.dumps(selection_registry(r)))
+    out=tmp_path/'prepared';prepare_moj_text(None,None,candidates,registry,out)
+    actual=pq.read_table(next(out.glob('judgments-*.parquet'))).to_pylist()[0]
+    assert r==before and projection_sha256(actual)==digest
+    for field in ('source_components_json','source_corrections_json','source_version_notice','source_url','text_ar'):
+        assert actual[field]==r[field]
+    assert actual['document_type']==HISTORICAL_APPEAL_SELECTION_TYPE
+
+
+def test_external_projection_registry_rejects_self_consistent_forged_original_provenance(tmp_path,historical_selected_appeal):
+    from saudi_legal.text_release import prepare_moj_text
+    r=historical_selected_appeal;registry=tmp_path/'synthetic-decisions.json'
+    registry.write_text(json.dumps(selection_registry(r)))
+    p=json.loads(r['source_corrections_json'])
+    # The local shape checker cannot hash private bytes: supplied plausible hashes
+    # still need the existing external registry's exact whole-projection binding.
+    p['source_context_selection']['original_contexts'][0]['raw_body_sha256']='f'*64
+    r['source_corrections_json']=json.dumps(p);validate_case_components(r)
+    candidates=tmp_path/'synthetic.jsonl';candidates.write_text(json.dumps(r,ensure_ascii=False)+'\n')
+    with pytest.raises(ValueError,match='Reviewed projection hash mismatch'):
+        prepare_moj_text(None,None,candidates,registry,tmp_path/'rejected')
+
+
+def test_selected_appeal_accepts_matching_optional_duplicate_claims(historical_selected_appeal):
+    r=historical_selected_appeal;p=json.loads(r['source_corrections_json']);s=p['source_context_selection']
+    p['whole_native_sha256']=s['whole_native_text_sha256']
+    # Like C33's combined shape, this is one offset pair per active body.
+    p['stored_native_body_offsets']=[s['original_contexts'][1]['native_offsets']]
+    r['source_corrections_json']=json.dumps(p);before=deepcopy(r)
+    validate_case_components(r);assert r==before
+
+
+@pytest.mark.parametrize('value',['f'*64,None,True,['not-a-hash']])
+def test_selected_appeal_rejects_contradictory_optional_whole_native_hash(historical_selected_appeal,value):
+    r=historical_selected_appeal;p=json.loads(r['source_corrections_json'])
+    assert value!=p['source_context_selection']['whole_native_text_sha256']
+    p['whole_native_sha256']=value;r['source_corrections_json']=json.dumps(p)
+    with pytest.raises(ValueError,match='whole-native hash claims disagree'):validate_case_components(r)
+
+
+@pytest.mark.parametrize('value',[None,[],[0,1],[[0,1]],[[0,1],[2,3]],[[True,2]],[[2,False]]])
+def test_selected_appeal_rejects_optional_offsets_that_do_not_bind_selected_native_body(historical_selected_appeal,value):
+    r=historical_selected_appeal;p=json.loads(r['source_corrections_json'])
+    p['stored_native_body_offsets']=value;r['source_corrections_json']=json.dumps(p)
+    with pytest.raises(ValueError,match='stored offsets must bind'):validate_case_components(r)
+
+
+def test_selected_appeal_optional_offsets_reject_bool_even_when_equal_to_required_integer(historical_selected_appeal):
+    r=historical_selected_appeal;p=json.loads(r['source_corrections_json']);s=p['source_context_selection']
+    trial='ج';appeal='أ';native=trial+appeal;text_hash=sha256(appeal.encode())
+    r.update(text_ar=appeal,text_sha256=text_hash,version_id=r['document_id']+'-'+text_hash[:16],
+        native_body_text_sha256=text_hash)
+    c=json.loads(r['source_components_json'])[0]
+    c.update(start_char=0,end_char=1,text_characters=1,text_sha256=text_hash)
+    r['source_components_json']=json.dumps([c]);p.update(transcription_sha256=text_hash,stored_native_body_sha256=text_hash)
+    s.update(whole_native_text_sha256=sha256(native.encode()),whole_native_characters=2,
+        canonical_selected_component_sha256=sha256(canonical(c).encode()),
+        selected_raw_body_sha256=text_hash,selected_proposed_body_sha256=text_hash,
+        excluded_nonjudicial_native_ranges=[])
+    s['original_contexts'][0].update(native_offsets=[0,1],raw_body_characters=1,raw_body_sha256=sha256(trial.encode()))
+    s['original_contexts'][1].update(native_offsets=[1,2],raw_body_characters=1,raw_body_sha256=text_hash)
+    p['stored_native_body_offsets']=[[1,2]];r['source_corrections_json']=json.dumps(p)
+    validate_case_components(r)
+    p['stored_native_body_offsets']=[[True,2]]
+    assert p['stored_native_body_offsets']==[s['original_contexts'][1]['native_offsets']]
+    r['source_corrections_json']=json.dumps(p)
+    with pytest.raises(ValueError,match='stored offsets must bind'):validate_case_components(r)
