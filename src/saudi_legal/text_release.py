@@ -143,22 +143,9 @@ def prepare_moj_text(laws_path,spans_path,judgments_path,decisions_path,output,b
             if not isinstance(json.loads(native),list):raise ValueError("Invalid native hierarchy")
             parents[row["document_id"]]=row
             native_units[row["document_id"]]=_expected_native_units(row)
-        elif config=="judgments" and row.get("source_components_json"):
-            components=json.loads(row["source_components_json"])
-            if not isinstance(components,list) or len(components)!=row.get("source_component_count"):
-                raise ValueError("Judicial source component count mismatch")
-            slices=[]
-            for c in components:
-                allowed={"source_field","decision_level","source_html_sha256","text_sha256","start_char","end_char",
-                    "text_characters","court_name","city","number","hijri_date_raw","gregorian_date_raw"}
-                if set(c)-allowed:raise ValueError("Unreviewed nested judicial component fields")
-                start,end=c["start_char"],c["end_char"]
-                if type(start) is not int or type(end) is not int or not 0<=start<end<=len(row["text_ar"]):
-                    raise ValueError("Invalid judicial component offsets")
-                text=row["text_ar"][start:end];slices.append(text)
-                if sha256(text.encode())!=c["text_sha256"] or not isinstance(c.get("source_html_sha256"),str) or len(c["source_html_sha256"])!=64:
-                    raise ValueError("Judicial component source/body hash mismatch")
-            if "\n\n".join(slices)!=row["text_ar"]:raise ValueError("Judicial body has unbound or overlapping component content")
+        elif config=="judgments":
+            from .moj import validate_case_components
+            validate_case_components(row)
         groups[config].append(_allowlisted(row,schema[config]))
     seen=set();counts={k:0 for k in parents};all_counts={k:0 for k in parents};empty=0;placeholders=0
     for unit in spans:

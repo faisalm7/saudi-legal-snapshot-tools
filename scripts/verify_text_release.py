@@ -11,6 +11,7 @@ from pathlib import Path
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
 from saudi_legal.core import sha256, canonical
+from saudi_legal.moj import validate_case_components
 from saudi_legal.text_release import _expected_native_units, projection_sha256
 
 
@@ -54,13 +55,8 @@ def main():
                     if sha256(r["source_sections_json"].encode())!=r["source_text_sha256"]:raise ValueError("Native hierarchy hash mismatch")
                     parents[r["document_id"]]=(r,_expected_native_units(r))
                 elif config=="boe_documents":boe_parents[r["document_id"]]=r;boe_units[r["document_id"]]=[]
-                elif r.get("source_components_json"):
-                    components=json.loads(r["source_components_json"]);parts=[]
-                    if len(components)!=r["source_component_count"]:raise ValueError("Judicial component count mismatch")
-                    for c in components:
-                        text=r["text_ar"][c["start_char"]:c["end_char"]];parts.append(text)
-                        if sha256(text.encode())!=c["text_sha256"]:raise ValueError("Judicial component hash mismatch")
-                    if "\n\n".join(parts)!=r["text_ar"]:raise ValueError("Judicial component boundaries mismatch")
+                else:
+                    validate_case_components(r)
             elif config=="boe_article_spans":
                 p=boe_parents[r["document_id"]]
                 if (p["text_ar"][r["start_char"]:r["end_char"]]!=r["text_ar"]

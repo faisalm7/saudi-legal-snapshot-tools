@@ -95,7 +95,7 @@ class CaseFormatting(HTMLParser):
         if tag=='br' and attrs:
             raise ValueError('Additional line-break attributes need separate handling')
         if tag=='p' and attrs not in ([], [('style','text-align: justify;')], [('style','text-align: right;')],
-                                     [('style','direction: ltr; text-align: right;')]):
+                                     [('style','direction: ltr; text-align: right;')], [('style','direction: ltr;')]):
             raise ValueError('Additional paragraph attributes need separate handling')
         observed_styles=('vertical-align: inherit;','font-size: ١٤pt;','font-size: 14pt;','color: rgb(0, 0, 0);')
         if tag=='span' and not (len(attrs)==1 and attrs[0][0]=='style' and attrs[0][1] in observed_styles):
@@ -162,7 +162,7 @@ def decode_case_response(raw,source_url,captured_at):
     row.update(court_name=model.get('judgmentCourtName'),city=model.get('judgmentCityName'),
                appeal_court_name=model.get('appealCourtName'),appeal_city=model.get('appealCityName'))
     row['quality_flags']=[]
-    if any('direction: ltr; text-align: right;' in model[c['source_field']] for c in components):
+    if any('direction: ltr;' in model[c['source_field']] for c in components):
         row['quality_flags'].append('publisher_ltr_paragraph_direction_plaintext_keeps_logical_text_node_order')
     if any(re.search(r'<\s*(?:ul|li)\b',model[c['source_field']],re.I) for c in components):
         row['quality_flags'].append('unordered_list_boundaries_preserved_as_line_breaks')
@@ -192,3 +192,95 @@ def capture_case(response_file,source_url,captured_at,output):
     with out.open('x',encoding='utf-8') as stream:stream.write(canonical(record))
     return {'document_id':record['document_id'],'source_components':record['source_component_count'],
             'source_fetched':False,'publication_permission_inferred':False}
+
+
+def validate_case_components(row):
+    """Check reviewed body boundaries and the declared source evidence shape.
+
+    Historical PDF page inspections are hash-bound review claims, not a fresh
+    verification of private PDF bytes. They never stand in for source HTML.
+    """
+    encoded=row.get('source_components_json')
+    # Earlier reviewed PDF editions have no nested component representation.
+    # Keep that existing path; the new opaque-route/page-claim shape is explicit.
+    historical=(row.get('extraction_method')=='official_historical_pdf_complete_visual_transcription_v1'
+                and (bool(encoded) or row.get('source_identity_kind')==
+                     'frozen_official_opaque_route_and_exact_historical_PDF_no_model_UUID'))
+    if not encoded and not historical:return
+    try:components=json.loads(encoded)
+    except (TypeError,ValueError) as exc:raise ValueError('Invalid judicial source components') from exc
+    if not isinstance(components,list) or len(components)!=row.get('source_component_count'):
+        raise ValueError('Judicial source component count mismatch')
+    allowed={'source_field','decision_level','source_html_sha256','text_sha256','start_char','end_char',
+             'text_characters','court_name','city','number','hijri_date_raw','gregorian_date_raw'}
+    if historical:
+        allowed=(allowed-{'source_field','source_html_sha256'})|{'source_pdf_pages','complete_document_pages_inspected'}
+        _validate_historical_pdf_identity(row,components)
+    parts=[]
+    for c in components:
+        if not isinstance(c,dict) or set(c)-allowed:
+            raise ValueError('Unreviewed nested judicial component fields')
+        start,end=c.get('start_char'),c.get('end_char')
+        if type(start) is not int or type(end) is not int or not 0<=start<end<=len(row['text_ar']):
+            raise ValueError('Invalid judicial component offsets')
+        text=row['text_ar'][start:end];parts.append(text)
+        if sha256(text.encode())!=c.get('text_sha256'):
+            raise ValueError('Judicial component source/body hash mismatch')
+        if historical:
+            if type(c.get('text_characters')) is not int or c['text_characters']!=len(text):
+                raise ValueError('Historical PDF component character count mismatch')
+        elif not isinstance(c.get('source_html_sha256'),str) or len(c['source_html_sha256'])!=64:
+            raise ValueError('Judicial component source/body hash mismatch')
+    if '\n\n'.join(parts)!=row['text_ar']:
+        raise ValueError('Judicial body has unbound or overlapping component content')
+
+
+def _validate_historical_pdf_identity(row,components):
+    """Support the observed complete historical first-instance PDF edition only."""
+    digest=row.get('source_pdf_sha256');pages=row.get('source_pdf_pages')
+    if (not isinstance(digest,str) or not re.fullmatch('[0-9a-f]{64}',digest)
+        or row.get('source_file_sha256')!=digest or type(pages) is not int or pages<1):
+        raise ValueError('Historical PDF requires exact source hashes and page count')
+    if (row.get('source_identity_kind')!='frozen_official_opaque_route_and_exact_historical_PDF_no_model_UUID'
+        or row.get('source_capture_kind')!='historical_official_PDF_capture_date_unknown'
+        or row.get('document_type')!='commercial_court_historical_judgment'
+        or row.get('source_family')!='moj_judgments'
+        or row.get('capture_timestamp_utc') is not None or row.get('source_api_url') is not None
+        or row.get('judgment_gregorian_date_raw') is not None or row.get('source_body_html_sha256') is not None):
+        raise ValueError('Unsupported historical PDF identity or capture claim')
+    parsed=urlparse(row.get('source_url') or '')
+    route=row.get('opaque_route_id')
+    if (parsed.scheme!='https' or parsed.netloc!='laws.moj.gov.sa' or parsed.query or parsed.fragment
+        or not isinstance(route,str) or not re.fullmatch('[A-Za-z0-9_=-]+',route)
+        or parsed.path!='/ar/JudicialDecisionsList/1/'+route or row.get('source_id')!=route):
+        raise ValueError('Historical PDF requires the exact observed official opaque route')
+    text=row.get('text_ar');text_hash=row.get('text_sha256');doc='sa-moj-historical-pdf-'+digest
+    if (not isinstance(text,str) or not text.strip() or sha256(text.encode())!=text_hash
+        or row.get('document_id')!=doc or row.get('version_id')!=doc+'-'+text_hash[:16]):
+        raise ValueError('Historical PDF text or version hash mismatch')
+    if (type(row.get('source_component_count')) is not int or len(components)!=1 or not isinstance(components[0],dict)
+        or row.get('has_judgment') is not True or row.get('has_appeal') is not False):
+        raise ValueError('Historical PDF needs one complete first-instance judgment')
+    component=components[0]
+    if component.get('decision_level')!='judgment' or any(component.get(c)!=row.get(r) for c,r in (
+        ('number','judgment_number'),('court_name','court_name'),('city','city'),
+        ('hijri_date_raw','judgment_hijri_date_raw'),('gregorian_date_raw','judgment_gregorian_date_raw'))):
+        raise ValueError('Historical PDF component metadata mismatch')
+    try:corrections=json.loads(row.get('source_corrections_json'))
+    except (TypeError,ValueError) as exc:raise ValueError('Historical PDF needs transcription provenance') from exc
+    if (not isinstance(corrections,dict) or corrections.get('source_pdf_sha256')!=digest
+        or corrections.get('transcription_sha256')!=text_hash
+        or not isinstance(row.get('native_body_text_sha256'),str)
+        or not re.fullmatch('[0-9a-f]{64}',row['native_body_text_sha256'])
+        or corrections.get('stored_native_body_sha256')!=row['native_body_text_sha256']
+        or type(corrections.get('complete_source_pages_reviewed')) is not int
+        or corrections['complete_source_pages_reviewed']!=pages):
+        raise ValueError('Historical PDF transcription/page provenance mismatch')
+    whole=list(range(1,pages+1));used=component.get('source_pdf_pages');blank=corrections.get('blank_pages')
+    def page_list(value):
+        return (isinstance(value,list) and all(type(p) is int and 1<=p<=pages for p in value)
+                and value==sorted(set(value)))
+    if (not page_list(used) or not used or not page_list(blank) or set(used)&set(blank)
+        or sorted(used+blank)!=whole or component.get('complete_document_pages_inspected')!=whole
+        or not page_list(component['complete_document_pages_inspected'])):
+        raise ValueError('Historical PDF requires exact component pages and whole-document inspection')

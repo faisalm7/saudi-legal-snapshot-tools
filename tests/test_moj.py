@@ -5,7 +5,7 @@ import json
 import pytest
 
 from saudi_legal.core import sha256
-from saudi_legal.moj import capture_supreme, decode_supreme_response, decode_case_response, html_body_text
+from saudi_legal.moj import capture_supreme, decode_supreme_response, decode_case_response, html_body_text, validate_case_components
 
 
 URL='https://laws.moj.gov.sa/ar/JudicialDecisionsList/3/SYNTHETIC_NOT_A_REAL_SOURCE'
@@ -61,6 +61,7 @@ def test_complete_dual_body_components_are_kept_with_exact_offsets(response):
     model['appealNumber']='SYNTHETIC_APPEAL_NUMBER';model['appealCourtName']='محكمة اصطناعية'
     url=URL.replace('/3/','/1/');raw=json.dumps(response,ensure_ascii=False).encode()
     record=decode_case_response(raw,url,TIME);components=json.loads(record['source_components_json'])
+    validate_case_components(record)
     assert record['source_component_count']==2 and record['document_type']=='judgment_and_appeal_publication_record'
     assert record['appeal_number']=='SYNTHETIC_APPEAL_NUMBER'
     assert record['text_ar']=='\n\n'.join(html_body_text(model[c['source_field']]) for c in components)
@@ -153,13 +154,18 @@ def test_case_paragraph_formatting_does_not_silently_accept_hidden_or_active_mar
             decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
 
 
-def test_observed_paragraph_direction_keeps_literal_logical_order_with_a_flag(response):
-    body='<p style="direction: ltr; text-align: right;">مثال اصطناعي: لا يلزم دفع 12 في 1444/01/02.</p>'
+@pytest.mark.parametrize('style',['direction: ltr; text-align: right;','direction: ltr;'])
+def test_observed_paragraph_direction_keeps_literal_logical_order_with_a_flag(response,style):
+    body=f'<p style="{style}">مثال اصطناعي: لا يلزم دفع 12 في 1444/01/02.</p>'
     response['model']['judgmentTextofRulling']=body
     row=decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
     assert row['text_ar']=='مثال اصطناعي: لا يلزم دفع 12 في 1444/01/02.'
     assert row['source_body_html_sha256']==sha256(body.encode())
     assert row['quality_flags']==['publisher_ltr_paragraph_direction_plaintext_keeps_logical_text_node_order']
+    for unsafe in ('direction: ltr; display: none;','direction: ltr; color: transparent;'):
+        response['model']['judgmentTextofRulling']=f'<p style="{unsafe}">لا يجوز حذف ١٢٣.</p>'
+        with pytest.raises(ValueError,match='paragraph attributes'):
+            decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
 
 
 def test_attribute_free_emphasis_keeps_literal_words_numbers_and_component_offsets(response):
@@ -192,3 +198,122 @@ def test_observed_black_text_style_preserves_exact_source_nodes_and_hashes(respo
         response['model']['judgmentTextofRulling']=f'<p><span style="{style}">مثال اصطناعي لا يُخفى.</span></p>'
         with pytest.raises(ValueError,match='span attributes'):
             decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+
+
+@pytest.fixture
+def historical_pdf_record():
+    text='مثال PDF اصطناعي: لا يلزم دفع ٢٧.٥ في 1444/01/02؛ (...) محفوظة.'
+    pdf_hash=sha256(b'SYNTHETIC PDF BYTES; NOT A REAL JUDGMENT')
+    native_hash=sha256(b'SYNTHETIC ORIGINAL NATIVE BODY')
+    text_hash=sha256(text.encode());doc='sa-moj-historical-pdf-'+pdf_hash
+    component={'decision_level':'judgment','start_char':0,'end_char':len(text),
+        'text_characters':len(text),'text_sha256':text_hash,'number':'SYNTHETIC',
+        'court_name':'محكمة اصطناعية','city':'مدينة اصطناعية','hijri_date_raw':'1444-01-02',
+        'gregorian_date_raw':None,'source_pdf_pages':[1],'complete_document_pages_inspected':[1,2]}
+    return {'document_id':doc,'version_id':doc+'-'+text_hash[:16],
+        'source_id':'SYNTHETIC_HISTORICAL_ROUTE','opaque_route_id':'SYNTHETIC_HISTORICAL_ROUTE',
+        'source_url':'https://laws.moj.gov.sa/ar/JudicialDecisionsList/1/SYNTHETIC_HISTORICAL_ROUTE',
+        'source_api_url':None,'capture_timestamp_utc':None,'source_family':'moj_judgments',
+        'document_type':'commercial_court_historical_judgment','source_pdf_sha256':pdf_hash,
+        'source_file_sha256':pdf_hash,'source_pdf_pages':2,'source_component_count':1,
+        'has_judgment':True,'has_appeal':False,'text_ar':text,'text_sha256':text_hash,
+        'judgment_number':'SYNTHETIC','judgment_hijri_date_raw':'1444-01-02',
+        'judgment_gregorian_date_raw':None,'court_name':'محكمة اصطناعية','city':'مدينة اصطناعية',
+        'extraction_method':'official_historical_pdf_complete_visual_transcription_v1',
+        'source_identity_kind':'frozen_official_opaque_route_and_exact_historical_PDF_no_model_UUID',
+        'source_capture_kind':'historical_official_PDF_capture_date_unknown',
+        'native_body_text_sha256':native_hash,
+        'source_components_json':json.dumps([component],ensure_ascii=False),
+        'source_corrections_json':json.dumps({'source_pdf_sha256':pdf_hash,
+            'transcription_sha256':text_hash,'stored_native_body_sha256':native_hash,
+            'complete_source_pages_reviewed':2,'blank_pages':[2]})}
+
+
+def test_historical_pdf_components_preserve_exact_projection_without_fabricated_HTML(historical_pdf_record):
+    record=historical_pdf_record;before=deepcopy(record)
+    validate_case_components(record)
+    assert record==before
+    component=json.loads(record['source_components_json'])[0]
+    assert 'source_html_sha256' not in component and 'source_field' not in component
+    assert component['source_pdf_pages']==[1] and component['complete_document_pages_inspected']==[1,2]
+    assert record['capture_timestamp_utc'] is None and record['source_api_url'] is None
+
+
+@pytest.mark.parametrize('field,value',[
+    ('source_pdf_pages',[]),('source_pdf_pages',[0]),('source_pdf_pages',[3]),
+    ('source_pdf_pages',[1,1]),('source_pdf_pages',[True]),('source_pdf_pages',[1,2]),
+    ('complete_document_pages_inspected',[1]),('complete_document_pages_inspected',[1,2,2]),
+    ('complete_document_pages_inspected',[True,2]),('complete_document_pages_inspected',[2,1]),
+    ('start_char',1),('end_char',True),('text_characters',0),('text_sha256','0'*64),
+    ('number','DIFFERENT_ACT'),('decision_level','appeal'),
+    ('source_html_sha256','0'*64),('source_field','judgmentTextofRulling'),
+    ('unreviewed_source_note','not silently discarded')])
+def test_historical_pdf_rejects_incomplete_pages_wrong_body_and_invented_HTML(historical_pdf_record,field,value):
+    component=json.loads(historical_pdf_record['source_components_json'])[0];component[field]=value
+    historical_pdf_record['source_components_json']=json.dumps([component])
+    with pytest.raises(ValueError):validate_case_components(historical_pdf_record)
+
+
+@pytest.mark.parametrize('field,value',[
+    ('source_file_sha256','0'*64),('source_pdf_sha256','not-a-hash'),('source_pdf_pages',True),
+    ('source_component_count',2),('source_component_count',True),('has_appeal',True),('has_judgment',False),
+    ('capture_timestamp_utc',TIME),('source_api_url','https://example.org/invented-api'),
+    ('judgment_gregorian_date_raw','2022-01-01'),('source_body_html_sha256','0'*64),
+    ('source_id','00000000-0000-4000-8000-000000000002'),('opaque_route_id','OTHER_ROUTE'),
+    ('source_url','https://example.org/ar/JudicialDecisionsList/1/SYNTHETIC_HISTORICAL_ROUTE'),
+    ('source_identity_kind','guessed_UUID'),('source_capture_kind','current_API'),
+    ('document_type','unreviewed_historical_shape'),('document_id','invented'),
+    ('version_id','invented'),('text_sha256','0'*64),('source_components_json',None)])
+def test_historical_pdf_rejects_false_source_identity_or_capture_claims(historical_pdf_record,field,value):
+    historical_pdf_record[field]=value
+    with pytest.raises(ValueError):validate_case_components(historical_pdf_record)
+
+
+@pytest.mark.parametrize('field,value',[
+    ('source_pdf_sha256','0'*64),('transcription_sha256','0'*64),
+    ('stored_native_body_sha256','0'*64),('complete_source_pages_reviewed',1),
+    ('complete_source_pages_reviewed',True),('blank_pages',[]),('blank_pages',[1,2]),
+    ('blank_pages',[2,2]),('blank_pages',[True]),('blank_pages',None)])
+def test_historical_pdf_requires_consistent_native_transcription_and_blank_page_provenance(historical_pdf_record,field,value):
+    corrections=json.loads(historical_pdf_record['source_corrections_json']);corrections[field]=value
+    historical_pdf_record['source_corrections_json']=json.dumps(corrections)
+    with pytest.raises(ValueError):validate_case_components(historical_pdf_record)
+
+
+def test_API_components_keep_HTML_evidence_and_reject_PDF_claims(response):
+    record=decode_case_response(json.dumps(response,ensure_ascii=False).encode(),URL,TIME)
+    before=deepcopy(record);validate_case_components(record);assert record==before
+    c=json.loads(record['source_components_json'])[0]
+    for change in ({'source_pdf_pages':[1]}, {'source_html_sha256':None}):
+        record['source_components_json']=json.dumps([{**c,**change}])
+        with pytest.raises(ValueError):validate_case_components(record)
+    # Prior Supreme Court records have no component JSON and retain that path.
+    validate_case_components(decode_supreme_response(json.dumps(response).encode(),URL,TIME))
+
+
+def test_prior_historical_editions_without_nested_page_claims_keep_existing_path(historical_pdf_record):
+    legacy=historical_pdf_record
+    legacy.update(source_components_json=None,
+        source_identity_kind='associated_API_UUID_matching_historical_case_judgment_court_city_and_Hijri_header',
+        source_capture_kind='historical_official_PDF_separate_version_capture_date_unknown')
+    before=deepcopy(legacy);validate_case_components(legacy);assert legacy==before
+
+
+def test_prepare_historical_pdf_keeps_reviewed_page_provenance_and_null_capture(tmp_path,historical_pdf_record):
+    import pyarrow.parquet as pq
+    from saudi_legal.text_release import prepare_moj_text, projection_sha256
+    r=historical_pdf_record;before=deepcopy(r);digest=projection_sha256(r)
+    candidates=tmp_path/'synthetic.jsonl';candidates.write_text(json.dumps(r,ensure_ascii=False)+'\n')
+    registry=tmp_path/'synthetic-decisions.json'
+    registry.write_text(json.dumps({'decisions':[{'document_id':r['document_id'],'decision':'supported',
+        'source_file_sha256':r['source_file_sha256'],'text_sha256':r['text_sha256'],
+        'projection_sha256':digest,'quality_review':'pass','privacy_review':'pass',
+        'rights_basis':'Synthetic test fixture, not a source licence.',
+        'evidence_urls':['https://example.org/synthetic-fixture'],'reason':'Invented fixture only.'}]}))
+    out=tmp_path/'prepared';prepare_moj_text(None,None,candidates,registry,out)
+    exported=pq.read_table(next(out.glob('judgments-*.parquet'))).to_pylist()[0]
+    assert historical_pdf_record==before and projection_sha256(exported)==digest
+    assert exported['source_components_json']==r['source_components_json']
+    assert exported['source_corrections_json']==r['source_corrections_json']
+    assert exported['text_ar']==r['text_ar'] and exported['capture_timestamp_utc'] is None
+    assert exported['source_id']==r['opaque_route_id'] and exported['source_api_url'] is None
