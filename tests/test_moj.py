@@ -229,6 +229,23 @@ def historical_pdf_record():
             'complete_source_pages_reviewed':2,'blank_pages':[2]})}
 
 
+@pytest.fixture
+def historical_appeal_pdf_record(historical_pdf_record):
+    record=historical_pdf_record
+    record.update(document_type='commercial_court_historical_appeal',
+        source_url=record['source_url'].replace('/1/','/0/'),has_judgment=False,has_appeal=True,
+        judgment_number=None,judgment_hijri_date_raw=None,judgment_gregorian_date_raw=None,
+        court_name=None,city=None,appeal_number='SYNTHETIC_APPEAL',
+        appeal_hijri_date_raw='1444-02-03',appeal_gregorian_date_raw=None,
+        appeal_court_name='محكمة استئناف اصطناعية',appeal_city='مدينة استئناف اصطناعية')
+    component=json.loads(record['source_components_json'])[0]
+    component.update(decision_level='appeal',number=record['appeal_number'],
+        court_name=record['appeal_court_name'],city=record['appeal_city'],
+        hijri_date_raw=record['appeal_hijri_date_raw'])
+    record['source_components_json']=json.dumps([component],ensure_ascii=False)
+    return record
+
+
 def test_historical_pdf_components_preserve_exact_projection_without_fabricated_HTML(historical_pdf_record):
     record=historical_pdf_record;before=deepcopy(record)
     validate_case_components(record)
@@ -239,6 +256,48 @@ def test_historical_pdf_components_preserve_exact_projection_without_fabricated_
     assert record['capture_timestamp_utc'] is None and record['source_api_url'] is None
 
 
+def test_historical_appeal_pdf_keeps_only_bound_appeal_metadata(historical_appeal_pdf_record):
+    record=historical_appeal_pdf_record;before=deepcopy(record)
+    validate_case_components(record)
+    assert record==before
+    assert record['has_judgment'] is False and record['has_appeal'] is True
+    assert '/JudicialDecisionsList/0/' in record['source_url']
+    assert all(record[k] is None for k in ('judgment_number','judgment_hijri_date_raw',
+        'judgment_gregorian_date_raw','court_name','city','appeal_gregorian_date_raw',
+        'capture_timestamp_utc','source_api_url'))
+    component=json.loads(record['source_components_json'])[0]
+    assert component['decision_level']=='appeal'
+    assert component['number']==record['appeal_number']=='SYNTHETIC_APPEAL'
+    assert component['court_name']==record['appeal_court_name']=='محكمة استئناف اصطناعية'
+    assert component['city']==record['appeal_city']=='مدينة استئناف اصطناعية'
+    assert component['hijri_date_raw']==record['appeal_hijri_date_raw']=='1444-02-03'
+    assert component['gregorian_date_raw'] is None
+    assert component['source_pdf_pages']==[1] and component['complete_document_pages_inspected']==[1,2]
+    assert 'source_html_sha256' not in component and 'source_field' not in component
+    assert record.get('source_body_html_sha256') is None
+    assert record['text_ar'][component['start_char']:component['end_char']]==before['text_ar']
+
+
+@pytest.mark.parametrize('field,value',[
+    ('has_judgment',True),('has_judgment',0),('has_appeal',False),('has_appeal',1),
+    ('document_type','commercial_court_historical_judgment'),
+    ('judgment_number','STALE'),('judgment_number',''),('judgment_hijri_date_raw','1444-01-02'),
+    ('judgment_gregorian_date_raw','2022-01-01'),('court_name','محكمة غير نشطة'),('city','مدينة غير نشطة'),
+    ('appeal_gregorian_date_raw','2022-02-03'),('appeal_number',None),('appeal_number',''),
+    ('appeal_court_name',None),('appeal_city',' '),('appeal_hijri_date_raw',None),
+    ('appeal_number','DIFFERENT_ACT'),('appeal_court_name','محكمة أخرى'),
+    ('appeal_city','مدينة أخرى'),('appeal_hijri_date_raw','1444-02-04'),
+    ('source_url','https://laws.moj.gov.sa/ar/JudicialDecisionsList/1/SYNTHETIC_HISTORICAL_ROUTE'),
+    ('source_url','https://laws.moj.gov.sa/ar/JudicialDecisionsList/2/SYNTHETIC_HISTORICAL_ROUTE'),
+    ('source_file_sha256','0'*64),('text_sha256','0'*64),
+    ('capture_timestamp_utc',TIME),('source_api_url','https://example.org/invented-api'),
+    ('source_body_html_sha256','0'*64)])
+def test_historical_appeal_pdf_rejects_mixed_state_unbound_metadata_or_route(historical_appeal_pdf_record,field,value):
+    historical_appeal_pdf_record[field]=value
+    with pytest.raises(ValueError):validate_case_components(historical_appeal_pdf_record)
+
+
+@pytest.mark.parametrize('fixture_name',['historical_pdf_record','historical_appeal_pdf_record'])
 @pytest.mark.parametrize('field,value',[
     ('source_pdf_pages',[]),('source_pdf_pages',[0]),('source_pdf_pages',[3]),
     ('source_pdf_pages',[1,1]),('source_pdf_pages',[True]),('source_pdf_pages',[1,2]),
@@ -248,10 +307,12 @@ def test_historical_pdf_components_preserve_exact_projection_without_fabricated_
     ('number','DIFFERENT_ACT'),('decision_level','appeal'),
     ('source_html_sha256','0'*64),('source_field','judgmentTextofRulling'),
     ('unreviewed_source_note','not silently discarded')])
-def test_historical_pdf_rejects_incomplete_pages_wrong_body_and_invented_HTML(historical_pdf_record,field,value):
-    component=json.loads(historical_pdf_record['source_components_json'])[0];component[field]=value
-    historical_pdf_record['source_components_json']=json.dumps([component])
-    with pytest.raises(ValueError):validate_case_components(historical_pdf_record)
+def test_historical_pdf_rejects_incomplete_pages_wrong_body_and_invented_HTML(request,fixture_name,field,value):
+    record=request.getfixturevalue(fixture_name)
+    component=json.loads(record['source_components_json'])[0]
+    component[field]='judgment' if field=='decision_level' and record['has_appeal'] else value
+    record['source_components_json']=json.dumps([component])
+    with pytest.raises(ValueError):validate_case_components(record)
 
 
 @pytest.mark.parametrize('field,value',[
@@ -261,6 +322,8 @@ def test_historical_pdf_rejects_incomplete_pages_wrong_body_and_invented_HTML(hi
     ('judgment_gregorian_date_raw','2022-01-01'),('source_body_html_sha256','0'*64),
     ('source_id','00000000-0000-4000-8000-000000000002'),('opaque_route_id','OTHER_ROUTE'),
     ('source_url','https://example.org/ar/JudicialDecisionsList/1/SYNTHETIC_HISTORICAL_ROUTE'),
+    ('source_url','https://laws.moj.gov.sa/ar/JudicialDecisionsList/0/SYNTHETIC_HISTORICAL_ROUTE'),
+    ('source_url','https://laws.moj.gov.sa/ar/JudicialDecisionsList/2/SYNTHETIC_HISTORICAL_ROUTE'),
     ('source_identity_kind','guessed_UUID'),('source_capture_kind','current_API'),
     ('document_type','unreviewed_historical_shape'),('document_id','invented'),
     ('version_id','invented'),('text_sha256','0'*64),('source_components_json',None)])
@@ -269,15 +332,17 @@ def test_historical_pdf_rejects_false_source_identity_or_capture_claims(historic
     with pytest.raises(ValueError):validate_case_components(historical_pdf_record)
 
 
+@pytest.mark.parametrize('fixture_name',['historical_pdf_record','historical_appeal_pdf_record'])
 @pytest.mark.parametrize('field,value',[
     ('source_pdf_sha256','0'*64),('transcription_sha256','0'*64),
     ('stored_native_body_sha256','0'*64),('complete_source_pages_reviewed',1),
     ('complete_source_pages_reviewed',True),('blank_pages',[]),('blank_pages',[1,2]),
     ('blank_pages',[2,2]),('blank_pages',[True]),('blank_pages',None)])
-def test_historical_pdf_requires_consistent_native_transcription_and_blank_page_provenance(historical_pdf_record,field,value):
-    corrections=json.loads(historical_pdf_record['source_corrections_json']);corrections[field]=value
-    historical_pdf_record['source_corrections_json']=json.dumps(corrections)
-    with pytest.raises(ValueError):validate_case_components(historical_pdf_record)
+def test_historical_pdf_requires_consistent_native_transcription_and_blank_page_provenance(request,fixture_name,field,value):
+    record=request.getfixturevalue(fixture_name)
+    corrections=json.loads(record['source_corrections_json']);corrections[field]=value
+    record['source_corrections_json']=json.dumps(corrections)
+    with pytest.raises(ValueError):validate_case_components(record)
 
 
 def test_API_components_keep_HTML_evidence_and_reject_PDF_claims(response):
@@ -299,10 +364,11 @@ def test_prior_historical_editions_without_nested_page_claims_keep_existing_path
     before=deepcopy(legacy);validate_case_components(legacy);assert legacy==before
 
 
-def test_prepare_historical_pdf_keeps_reviewed_page_provenance_and_null_capture(tmp_path,historical_pdf_record):
+@pytest.mark.parametrize('fixture_name',['historical_pdf_record','historical_appeal_pdf_record'])
+def test_prepare_historical_pdf_keeps_reviewed_page_provenance_and_null_capture(tmp_path,request,fixture_name):
     import pyarrow.parquet as pq
     from saudi_legal.text_release import prepare_moj_text, projection_sha256
-    r=historical_pdf_record;before=deepcopy(r);digest=projection_sha256(r)
+    r=request.getfixturevalue(fixture_name);before=deepcopy(r);digest=projection_sha256(r)
     candidates=tmp_path/'synthetic.jsonl';candidates.write_text(json.dumps(r,ensure_ascii=False)+'\n')
     registry=tmp_path/'synthetic-decisions.json'
     registry.write_text(json.dumps({'decisions':[{'document_id':r['document_id'],'decision':'supported',
@@ -312,7 +378,7 @@ def test_prepare_historical_pdf_keeps_reviewed_page_provenance_and_null_capture(
         'evidence_urls':['https://example.org/synthetic-fixture'],'reason':'Invented fixture only.'}]}))
     out=tmp_path/'prepared';prepare_moj_text(None,None,candidates,registry,out)
     exported=pq.read_table(next(out.glob('judgments-*.parquet'))).to_pylist()[0]
-    assert historical_pdf_record==before and projection_sha256(exported)==digest
+    assert r==before and projection_sha256(exported)==digest
     assert exported['source_components_json']==r['source_components_json']
     assert exported['source_corrections_json']==r['source_corrections_json']
     assert exported['text_ar']==r['text_ar'] and exported['capture_timestamp_utc'] is None

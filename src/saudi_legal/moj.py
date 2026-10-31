@@ -236,35 +236,47 @@ def validate_case_components(row):
 
 
 def _validate_historical_pdf_identity(row,components):
-    """Support the observed complete historical first-instance PDF edition only."""
+    """Check the observed complete first-instance or appeal-only PDF edition."""
     digest=row.get('source_pdf_sha256');pages=row.get('source_pdf_pages')
+    appeal=row.get('document_type')=='commercial_court_historical_appeal'
     if (not isinstance(digest,str) or not re.fullmatch('[0-9a-f]{64}',digest)
         or row.get('source_file_sha256')!=digest or type(pages) is not int or pages<1):
         raise ValueError('Historical PDF requires exact source hashes and page count')
     if (row.get('source_identity_kind')!='frozen_official_opaque_route_and_exact_historical_PDF_no_model_UUID'
         or row.get('source_capture_kind')!='historical_official_PDF_capture_date_unknown'
-        or row.get('document_type')!='commercial_court_historical_judgment'
+        or row.get('document_type') not in ('commercial_court_historical_judgment','commercial_court_historical_appeal')
         or row.get('source_family')!='moj_judgments'
         or row.get('capture_timestamp_utc') is not None or row.get('source_api_url') is not None
         or row.get('judgment_gregorian_date_raw') is not None or row.get('source_body_html_sha256') is not None):
         raise ValueError('Unsupported historical PDF identity or capture claim')
     parsed=urlparse(row.get('source_url') or '')
     route=row.get('opaque_route_id')
+    route_kind='0' if appeal else '1'
     if (parsed.scheme!='https' or parsed.netloc!='laws.moj.gov.sa' or parsed.query or parsed.fragment
         or not isinstance(route,str) or not re.fullmatch('[A-Za-z0-9_=-]+',route)
-        or parsed.path!='/ar/JudicialDecisionsList/1/'+route or row.get('source_id')!=route):
+        or parsed.path!='/ar/JudicialDecisionsList/'+route_kind+'/'+route or row.get('source_id')!=route):
         raise ValueError('Historical PDF requires the exact observed official opaque route')
     text=row.get('text_ar');text_hash=row.get('text_sha256');doc='sa-moj-historical-pdf-'+digest
     if (not isinstance(text,str) or not text.strip() or sha256(text.encode())!=text_hash
         or row.get('document_id')!=doc or row.get('version_id')!=doc+'-'+text_hash[:16]):
         raise ValueError('Historical PDF text or version hash mismatch')
     if (type(row.get('source_component_count')) is not int or len(components)!=1 or not isinstance(components[0],dict)
-        or row.get('has_judgment') is not True or row.get('has_appeal') is not False):
-        raise ValueError('Historical PDF needs one complete first-instance judgment')
+        or row.get('has_judgment') is not (not appeal) or row.get('has_appeal') is not appeal):
+        raise ValueError('Historical PDF needs one complete declared judgment or appeal')
+    if appeal:
+        if (any(row.get(k) is not None for k in ('judgment_number','judgment_hijri_date_raw',
+                'judgment_gregorian_date_raw','court_name','city','appeal_gregorian_date_raw'))
+            or any(not isinstance(row.get(k),str) or not row[k].strip() for k in (
+                'appeal_number','appeal_hijri_date_raw','appeal_court_name','appeal_city'))):
+            raise ValueError('Historical appeal needs active appeal metadata and null inactive judgment metadata')
+        metadata=(('number','appeal_number'),('court_name','appeal_court_name'),('city','appeal_city'),
+                  ('hijri_date_raw','appeal_hijri_date_raw'),('gregorian_date_raw','appeal_gregorian_date_raw'))
+    else:
+        metadata=(('number','judgment_number'),('court_name','court_name'),('city','city'),
+                  ('hijri_date_raw','judgment_hijri_date_raw'),('gregorian_date_raw','judgment_gregorian_date_raw'))
     component=components[0]
-    if component.get('decision_level')!='judgment' or any(component.get(c)!=row.get(r) for c,r in (
-        ('number','judgment_number'),('court_name','court_name'),('city','city'),
-        ('hijri_date_raw','judgment_hijri_date_raw'),('gregorian_date_raw','judgment_gregorian_date_raw'))):
+    if (component.get('decision_level')!=('appeal' if appeal else 'judgment')
+        or any(component.get(c)!=row.get(r) for c,r in metadata)):
         raise ValueError('Historical PDF component metadata mismatch')
     try:corrections=json.loads(row.get('source_corrections_json'))
     except (TypeError,ValueError) as exc:raise ValueError('Historical PDF needs transcription provenance') from exc
