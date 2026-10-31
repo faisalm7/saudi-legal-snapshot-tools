@@ -236,15 +236,17 @@ def validate_case_components(row):
 
 
 def _validate_historical_pdf_identity(row,components):
-    """Check the observed complete first-instance or appeal-only PDF edition."""
+    """Check one complete first-instance, appeal-only, or combined PDF edition."""
     digest=row.get('source_pdf_sha256');pages=row.get('source_pdf_pages')
     appeal=row.get('document_type')=='commercial_court_historical_appeal'
+    combined=row.get('document_type')=='commercial_court_historical_judgment_and_appeal'
     if (not isinstance(digest,str) or not re.fullmatch('[0-9a-f]{64}',digest)
         or row.get('source_file_sha256')!=digest or type(pages) is not int or pages<1):
         raise ValueError('Historical PDF requires exact source hashes and page count')
     if (row.get('source_identity_kind')!='frozen_official_opaque_route_and_exact_historical_PDF_no_model_UUID'
         or row.get('source_capture_kind')!='historical_official_PDF_capture_date_unknown'
-        or row.get('document_type') not in ('commercial_court_historical_judgment','commercial_court_historical_appeal')
+        or row.get('document_type') not in ('commercial_court_historical_judgment','commercial_court_historical_appeal',
+                'commercial_court_historical_judgment_and_appeal')
         or row.get('source_family')!='moj_judgments'
         or row.get('capture_timestamp_utc') is not None or row.get('source_api_url') is not None
         or row.get('judgment_gregorian_date_raw') is not None or row.get('source_body_html_sha256') is not None):
@@ -260,24 +262,31 @@ def _validate_historical_pdf_identity(row,components):
     if (not isinstance(text,str) or not text.strip() or sha256(text.encode())!=text_hash
         or row.get('document_id')!=doc or row.get('version_id')!=doc+'-'+text_hash[:16]):
         raise ValueError('Historical PDF text or version hash mismatch')
-    if (type(row.get('source_component_count')) is not int or len(components)!=1 or not isinstance(components[0],dict)
-        or row.get('has_judgment') is not (not appeal) or row.get('has_appeal') is not appeal):
-        raise ValueError('Historical PDF needs one complete declared judgment or appeal')
+    levels=['judgment','appeal'] if combined else ['appeal'] if appeal else ['judgment']
+    if (type(row.get('source_component_count')) is not int or len(components)!=len(levels)
+        or any(not isinstance(c,dict) for c in components)
+        or row.get('has_judgment') is not (not appeal)
+        or row.get('has_appeal') is not (appeal or combined)):
+        raise ValueError('Historical PDF needs the declared complete judicial components')
     if appeal:
         if (any(row.get(k) is not None for k in ('judgment_number','judgment_hijri_date_raw',
                 'judgment_gregorian_date_raw','court_name','city','appeal_gregorian_date_raw'))
             or any(not isinstance(row.get(k),str) or not row[k].strip() for k in (
                 'appeal_number','appeal_hijri_date_raw','appeal_court_name','appeal_city'))):
             raise ValueError('Historical appeal needs active appeal metadata and null inactive judgment metadata')
+    if combined and (row.get('appeal_gregorian_date_raw') is not None
+        or any(not isinstance(row.get(k),str) or not row[k].strip() for k in (
+            'judgment_number','judgment_hijri_date_raw','court_name','city',
+            'appeal_number','appeal_hijri_date_raw','appeal_court_name','appeal_city'))):
+        raise ValueError('Combined historical PDF needs both active metadata sets and null Gregorian dates')
+    for component,level in zip(components,levels):
         metadata=(('number','appeal_number'),('court_name','appeal_court_name'),('city','appeal_city'),
-                  ('hijri_date_raw','appeal_hijri_date_raw'),('gregorian_date_raw','appeal_gregorian_date_raw'))
-    else:
-        metadata=(('number','judgment_number'),('court_name','court_name'),('city','city'),
+                  ('hijri_date_raw','appeal_hijri_date_raw'),('gregorian_date_raw','appeal_gregorian_date_raw')) if level=='appeal' else (
+                  ('number','judgment_number'),('court_name','court_name'),('city','city'),
                   ('hijri_date_raw','judgment_hijri_date_raw'),('gregorian_date_raw','judgment_gregorian_date_raw'))
-    component=components[0]
-    if (component.get('decision_level')!=('appeal' if appeal else 'judgment')
-        or any(component.get(c)!=row.get(r) for c,r in metadata)):
-        raise ValueError('Historical PDF component metadata mismatch')
+        if (component.get('decision_level')!=level
+            or any(component.get(c)!=row.get(r) for c,r in metadata)):
+            raise ValueError('Historical PDF component metadata mismatch')
     try:corrections=json.loads(row.get('source_corrections_json'))
     except (TypeError,ValueError) as exc:raise ValueError('Historical PDF needs transcription provenance') from exc
     if (not isinstance(corrections,dict) or corrections.get('source_pdf_sha256')!=digest
@@ -288,11 +297,48 @@ def _validate_historical_pdf_identity(row,components):
         or type(corrections.get('complete_source_pages_reviewed')) is not int
         or corrections['complete_source_pages_reviewed']!=pages):
         raise ValueError('Historical PDF transcription/page provenance mismatch')
-    whole=list(range(1,pages+1));used=component.get('source_pdf_pages');blank=corrections.get('blank_pages')
+    whole=list(range(1,pages+1));blank=corrections.get('blank_pages')
     def page_list(value):
         return (isinstance(value,list) and all(type(p) is int and 1<=p<=pages for p in value)
                 and value==sorted(set(value)))
-    if (not page_list(used) or not used or not page_list(blank) or set(used)&set(blank)
-        or sorted(used+blank)!=whole or component.get('complete_document_pages_inspected')!=whole
-        or not page_list(component['complete_document_pages_inspected'])):
+    if not page_list(blank):
         raise ValueError('Historical PDF requires exact component pages and whole-document inspection')
+    used=set()
+    for component in components:
+        component_pages=component.get('source_pdf_pages')
+        if (not page_list(component_pages) or not component_pages
+            or component.get('complete_document_pages_inspected')!=whole
+            or not page_list(component['complete_document_pages_inspected'])):
+            raise ValueError('Historical PDF requires exact component pages and whole-document inspection')
+        used.update(component_pages)
+    if used & set(blank) or sorted(used | set(blank))!=whole:
+        raise ValueError('Historical PDF requires exact component pages and whole-document inspection')
+    if combined:
+        derivations=corrections.get('active_component_body_derivations')
+        natives=corrections.get('stored_native_body_components')
+        offsets=corrections.get('stored_native_body_offsets')
+        if any(not isinstance(v,list) or len(v)!=2 for v in (derivations,natives,offsets)):
+            raise ValueError('Combined historical PDF needs both bound native body derivations')
+        def offset_pair(value):
+            return (isinstance(value,list) and len(value)==2
+                    and all(type(v) is int for v in value) and 0<=value[0]<value[1])
+        previous_end=0
+        for c,d,n,pair in zip(components,derivations,natives,offsets):
+            if (not isinstance(d,dict) or not isinstance(n,dict)
+                or not offset_pair(pair) or pair[0]<previous_end
+                or not offset_pair(d.get('native_offsets')) or d['native_offsets']!=pair
+                or not offset_pair([n.get('source_native_start_char'),n.get('source_native_end_char')])
+                or n.get('source_native_start_char')!=pair[0] or n.get('source_native_end_char')!=pair[1]
+                or type(n.get('raw_body_characters')) is not int
+                or n['raw_body_characters']!=pair[1]-pair[0]
+                or d.get('decision_level')!=c.get('decision_level') or n.get('decision_level')!=c.get('decision_level')
+                or not isinstance(d.get('raw_body_sha256'),str)
+                or not re.fullmatch('[0-9a-f]{64}',d['raw_body_sha256'])
+                or n.get('raw_body_sha256')!=d['raw_body_sha256']
+                or d.get('proposed_body_sha256')!=c.get('text_sha256')
+                or not offset_pair(d.get('proposed_offsets'))
+                or d['proposed_offsets']!=[c.get('start_char'),c.get('end_char')]
+                or not page_list(d.get('source_pdf_pages'))
+                or d['source_pdf_pages']!=c.get('source_pdf_pages')):
+                raise ValueError('Combined historical PDF native/component derivation mismatch')
+            previous_end=pair[1]
