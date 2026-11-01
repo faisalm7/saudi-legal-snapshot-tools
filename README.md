@@ -1,10 +1,10 @@
 # Saudi legal snapshot tools
 
-Search Arabic legal wording, read the matching passage in its source context and follow the official citation. The downloadable dataset contains **13,429 source publication snapshots**: 468 from the Bureau of Experts, 76 MOJ instrument publications and 12,885 court publications. The article tables contain **13,863 spans**, separately from their parent documents. Ninety-six official annex image pages preserve useful material that would be lost in plain text.
+Search Arabic legal wording, read the matching passage in its source context and follow the official citation. The downloadable dataset contains **14,521 source publication snapshots**: 468 from the Bureau of Experts, 76 MOJ instrument publications and 13,977 court publications. The article tables contain **13,863 spans**, separately from their parent documents. Ninety-six official annex image pages preserve useful material that would be lost in plain text.
 
 I collected the original material in 2025 for an earlier legal AI project, and I directed this release to make that collection useful to other developers. Codex assisted with extraction, source comparisons, contextual assessment, code and documentation. Independent review here means a separate AI-agent pass; it is not a claim that I manually read every source or that a lawyer certified the data.
 
-[Get the text dataset](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots) · [Coverage and quality](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots/blob/69e5ee3c229e9eadca8f3ea27915e72d914a766a/QUALITY.md) · [Rights and source conditions](docs/source-rights.md)
+[Get the text dataset](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots) · [Coverage and quality](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots/blob/f07cd16c3a39fb6099a352b4e5d9b3c40c5ab2a1/QUALITY.md) · [Rights and source conditions](docs/source-rights.md)
 
 ## Try the real data
 
@@ -29,7 +29,7 @@ cases = load_dataset("Faisal73/saudi-legal-text-snapshots",
 print(len(cases), cases[0]["source_url"])
 ```
 
-These counts describe the public Hugging Face commit `69e5ee3c229e9eadca8f3ea27915e72d914a766a`, verified on 31 October 2026. Use `--revision 69e5ee3c229e9eadca8f3ea27915e72d914a766a` with the example, or the same value for `revision=` with `load_dataset`, to reproduce that snapshot. The executed examples record their code and data revisions. Local candidates and unfinished reviews are excluded from these public totals.
+These counts describe the public Hugging Face commit `f07cd16c3a39fb6099a352b4e5d9b3c40c5ab2a1`, verified on 31 October 2026. Use `--revision f07cd16c3a39fb6099a352b4e5d9b3c40c5ab2a1` with the example, or the same value for `revision=` with `load_dataset`, to reproduce that snapshot. The executed examples record their code and data revisions. Local candidates and unfinished reviews are excluded from these public totals.
 
 ## What's included
 
@@ -40,11 +40,11 @@ These counts describe the public Hugging Face commit `69e5ee3c229e9eadca8f3ea279
 | `laws` | 76 | A MOJ legislative or other official instrument publication |
 | `article_spans` | 4,505 | An explicit article unit in the MOJ hierarchy |
 | `source_sections` | 1,605 | Another useful MOJ source unit |
-| `judgments` | 12,885 | A reviewed court publication, sometimes containing more than one decision field |
+| `judgments` | 13,977 | A reviewed court publication, sometimes containing more than one decision field |
 
-The court rows contain 14,529 populated source body components. BOE spans are verified in 352 parents; 116 parents have no verified article table. Those unknown boundaries do not produce empty article rows. The 96 annex pages belong to six BOE parents and are listed in the dataset's `boe-annex-pages.jsonl`; they are separate historical source assets, not OCR text or additional laws.
+The court rows contain 16,353 populated source body components. BOE spans are verified in 352 parents; 116 parents have no verified article table. Those unknown boundaries do not produce empty article rows. Six documented court selections retain complete judicial contexts. Five earlier API selections omit unrelated, repeated or inconsistent surrounding fields. One historical PDF publication retains its complete appeal correction decision while its separate complete trial context stays private for a specific privacy issue. See the exact ranges in the dataset's `source-context-selections-v0.5.0.jsonl`. Trial-only selections do not assert an appeal outcome. The 96 annex pages belong to six BOE parents and are listed in the dataset's `boe-annex-pages.jsonl`; they are separate historical source assets, not OCR text or additional laws.
 
-Compared with v0.4.0, the published snapshot adds 11,967 court publications, 11 BOE publications and 208 BOE spans. Counts are generated from the actual Parquet artifacts in [coverage.json](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots/blob/69e5ee3c229e9eadca8f3ea27915e72d914a766a/coverage.json). The separate [468-row metadata catalogue](https://huggingface.co/datasets/Faisal73/saudi-legal-source-catalogue-2025) remains available.
+Compared with v0.4.0, the published snapshot adds 13,059 court publications, 11 BOE publications and 208 BOE spans. Counts are generated from the actual Parquet artifacts in [coverage.json](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots/blob/f07cd16c3a39fb6099a352b4e5d9b3c40c5ab2a1/coverage.json). The separate [468-row metadata catalogue](https://huggingface.co/datasets/Faisal73/saudi-legal-source-catalogue-2025) remains available.
 
 These are captured versions, with overlap between sources and proceedings. File copies, article chunks and annex pages are not extra documents. Distinct publication identifiers do not establish a count of unique laws or cases. The data is useful for text access, source inspection and experiments that account for its limits; it is not a current consolidated statement of Saudi law.
 
