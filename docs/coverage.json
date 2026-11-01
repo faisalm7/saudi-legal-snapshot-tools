@@ -7,7 +7,7 @@
     "laws": 76,
     "article_spans": 4505,
     "source_sections": 1605,
-    "judgments": 13977
+    "judgments": 13990
   },
   "additions_since_v04": {
     "boe_documents": 11,
@@ -15,9 +15,9 @@
     "laws": 0,
     "article_spans": 0,
     "source_sections": 0,
-    "judgments": 13059
+    "judgments": 13072
   },
-  "source_publication_snapshot_rows": 14521,
+  "source_publication_snapshot_rows": 14534,
   "article_span_rows": 13863,
   "other_source_units": 1605,
   "source_publication_snapshot_rows_are_not_unique_laws_or_cases": true,
@@ -98,12 +98,12 @@
       "complete_flags_location": "quality_flags on each published parent record; all factual flags retained there"
     },
     "judgments": {
-      "publication_rows": 13977,
-      "distinct_document_ids": 13977,
-      "distinct_source_ids": 13977,
-      "distinct_official_source_urls": 13976,
-      "distinct_text_hashes": 13977,
-      "unknown_capture_dates": 174,
+      "publication_rows": 13990,
+      "distinct_document_ids": 13990,
+      "distinct_source_ids": 13990,
+      "distinct_official_source_urls": 13989,
+      "distinct_text_hashes": 13990,
+      "unknown_capture_dates": 187,
       "document_types": {
         "judgment_publication_record": 10889,
         "judgment_and_appeal_publication_record": 2369,
@@ -111,8 +111,8 @@
         "appeal_publication_record": 103,
         "supreme_court_judgment": 5,
         "supreme_court_historical_judgment": 28,
-        "commercial_court_historical_judgment": 137,
-        "commercial_court_historical_judgment_and_appeal": 7,
+        "commercial_court_historical_judgment": 140,
+        "commercial_court_historical_judgment_and_appeal": 17,
         "commercial_court_captured_pdf_judgment": 1,
         "supreme_court_judgment_current_pdf_transcription": 1,
         "commercial_court_historical_appeal": 1,
@@ -128,20 +128,20 @@
         "strict_historical_publisher_header_source_identity_verified": 425,
         "supplementary_PDF_parser_and_native_comparison_checked_not_literal_equivalence": 371,
         "complete_current_API_fields_independently_context_reviewed": 188,
-        "source_capture_date_unknown": 174,
+        "source_capture_date_unknown": 187,
         "current_PDF_native_compared_as_diagnostic_not_literal_equivalence": 171,
-        "not_current_legal_correctness_or_anonymity_certification": 146,
-        "current_API_not_available_not_repaired_or_spliced": 143,
-        "official_opaque_route_identity_supported_model_UUID_not_known": 143,
-        "complete_historical_PDF_all_actual_pages_inspected": 136,
+        "not_current_legal_correctness_or_anonymity_certification": 159,
+        "official_opaque_route_identity_supported_model_UUID_not_known": 156,
+        "current_API_not_available_not_repaired_or_spliced": 155,
+        "complete_historical_PDF_all_actual_pages_inspected": 145,
         "official_judicial_officeholder_names_retained": 133,
-        "source_words_names_masks_negations_numeric_values_and_date_order_retained": 130,
+        "source_words_names_masks_negations_numeric_values_and_date_order_retained": 132,
+        "complete_primary_and_independent_projection_and_whole_PDF_review": 103,
         "source_amount_or_date_wording_inconsistency_retained": 101,
-        "complete_primary_and_independent_projection_and_whole_PDF_review": 99,
         "publisher_hearing_metadata_day_variation_retained": 67
       },
-      "distinct_quality_flags": 45147,
-      "quality_flag_occurrences": 57936,
+      "distinct_quality_flags": 45443,
+      "quality_flag_occurrences": 58339,
       "quality_flag_summary_limit": 20,
       "complete_flags_location": "quality_flags on each published parent record; all factual flags retained there"
     }
@@ -153,24 +153,24 @@
     "scope": "Source-evidenced exact spans; no claim every historical capture has all semantic article boundaries."
   },
   "court_structure": {
-    "publication_rows": 13977,
-    "populated_source_body_components": 16353,
-    "with_primary_judgment_body": 13872,
-    "with_appeal_body": 2481,
+    "publication_rows": 13990,
+    "populated_source_body_components": 16376,
+    "with_primary_judgment_body": 13885,
+    "with_appeal_body": 2491,
     "source_capture_kinds": {
       "official_API_response": 13801,
-      "historical_official_PDF_capture_date_unknown": 173,
+      "historical_official_PDF_capture_date_unknown": 186,
       "historical_official_PDF_separate_version_capture_date_unknown": 1,
       "captured_official_PDF_separate_version": 1,
       "current_official_PDF": 1
     },
-    "distinct_nonempty_judgment_number_labels": 13805,
-    "distinct_nonempty_appeal_number_labels": 2461,
+    "distinct_nonempty_judgment_number_labels": 13817,
+    "distinct_nonempty_appeal_number_labels": 2471,
     "number_label_counts_are_not_verified_unique_cases": true
   },
   "public_artifacts": {
     "parquet_files": 158,
-    "parquet_bytes": 110815159,
+    "parquet_bytes": 110975604,
     "normative_annex_image_files": 96,
     "normative_annex_image_bytes": 12492928
   }
