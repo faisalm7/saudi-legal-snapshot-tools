@@ -2,7 +2,115 @@
 
 Load real records, search Arabic passages, inspect their parent documents and follow official citations. No private corpus, model, paid API or account is required.
 
-## RC39: current public snapshot · 3 November 2026 UTC
+## RC40: current public snapshot · 3 November 2026 UTC
+
+The unchanged public example functions were executed on freshly and anonymously streamed dataset commit `d8949cdb3a81f0a0a8a146d28a046d191165d17e` during verification of all six complete configurations. This used the recorded options and the default 150-character context; it was a function-level check, not another direct CLI run. The earlier pinned CLI and checkpoint outputs below remain historical evidence.
+
+Use the setup below. These commands reproduce the recorded options against this exact snapshot:
+
+```bash
+python examples/texts.py --dataset Faisal73/saudi-legal-text-snapshots --revision d8949cdb3a81f0a0a8a146d28a046d191165d17e --config boe_article_spans --query 'مجلس الإدارة' --show-parent --limit 1
+python examples/texts.py --dataset Faisal73/saudi-legal-text-snapshots --revision d8949cdb3a81f0a0a8a146d28a046d191165d17e --config article_spans --query 'التعويض' --show-parent --limit 1
+python examples/texts.py --dataset Faisal73/saudi-legal-text-snapshots --revision d8949cdb3a81f0a0a8a146d28a046d191165d17e --config judgments --query 'التحكيم' --court 'التجارية' --city 'الرياض' --limit 1
+```
+
+| Configuration | Matches | Matching parents | After metadata filter | Entire configuration |
+| --- | ---: | ---: | ---: | ---: |
+| `boe_article_spans` | 232 | 54 | 9,358 | 9,358 |
+| `article_spans` | 126 | 23 | 4,505 | 4,505 |
+| `judgments` | 179 | 179 | 5,797 | 14,030 |
+
+Actual selected output fields follow. Fixed windows can start inside a word; inspect the complete parent for context. Parent offsets and hashes bind each article to its stored parent. Court results are already parent-level text contexts. Capture dates do not establish legal force, and a text match does not establish a court outcome.
+
+```json
+{
+  "revision": "d8949cdb3a81f0a0a8a146d28a046d191165d17e",
+  "example_code_sha256": "7c164ab5e724f9d42b14d6024c178429e0e35574f898a131d240dea25c1bcf09",
+  "examples": [
+    {
+      "configuration": "boe_article_spans",
+      "query": "مجلس الإدارة",
+      "matching_rows": 232,
+      "matching_parent_documents": 54,
+      "metadata_filtered_rows": 9358,
+      "total_configuration_rows": 9358,
+      "source_sequence": "المادة السادسة عشرة:",
+      "parent_title": "تنظيم مؤسسة البريد السعودي",
+      "matched_text": "مجلس الإدارة",
+      "passage": "المادة السادسة عشرة: ينشر هذا التنظيم في الجريدة الرسمية، ويعمل به بعد 180 يوما من تاريخ نشره، باستثناء الأحكام المتعلقة بتشكيل مجلس الإدارة واختصاصاته، فتعد نافذة من تاريخ نشره.",
+      "start_in_source_row": 128,
+      "source_id": "0041fa37-4a6d-4b68-a9ab-a9a700f2e88f",
+      "capture_timestamp_utc": "2025-08-09T10:54:01.306341Z",
+      "text_sha256": "db99890ae7a06d69764217e5aac54eeb374cd8eefd6e178039c98b9a5890fd8f",
+      "source_url": "https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/0041fa37-4a6d-4b68-a9ab-a9a700f2e88f/1",
+      "start_in_parent": 10026,
+      "parent_text_sha256": "1be04a14b054330548e154daa039597d4cf8b6a927eefa80063527bc3a14a63f",
+      "parent_source_url": "https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/0041fa37-4a6d-4b68-a9ab-a9a700f2e88f/1",
+      "parent_metadata": {
+        "document_type": "official_legal_instrument",
+        "source_family": "boe",
+        "capture_timestamp_utc": "2025-08-09T10:54:01.306341Z",
+        "source_reported_status_at_capture": "ساري",
+        "court_name": null,
+        "appeal_court_name": null,
+        "city": null,
+        "appeal_city": null
+      }
+    },
+    {
+      "configuration": "article_spans",
+      "query": "التعويض",
+      "matching_rows": 126,
+      "matching_parent_documents": 23,
+      "metadata_filtered_rows": 4505,
+      "total_configuration_rows": 4505,
+      "source_sequence": "المادة الحادية والأربعون",
+      "parent_title": "نظام المعاملات المدنية",
+      "matched_text": "التَّعويض",
+      "passage": "لك على أطراف التفاوض التزاماً بإبرام هذا العقد، ومع ذلك يكون من يتفاوض أو يُنهي التفاوض بسوء نية مسؤولاً عن الضرر الذي أصاب الطرف الآخر، ولا يشمل ذلك التَّعويض عمَّا فاته من كسب متوقع من العقد محل التفاوض.\n\n٢- يُعدُّ من سوء النية عدم الجدية في التفاوض، أو تعمد عدم الإدلاء ببيانٍ جوهريٍّ مؤثرٍ في العقد.",
+      "start_in_source_row": 188,
+      "source_id": "PBbHmywh1XMp-Kyv3NtQLg",
+      "capture_timestamp_utc": "2026-10-23T17:31:39.161567+00:00",
+      "text_sha256": "9e027b0671ca1ef6094fafcc5923b54ffd9d8cd4607cf67cd300fe778e7c3332",
+      "source_url": "https://laws.moj.gov.sa/ar/legislation/PBbHmywh1XMp-Kyv3NtQLg#content-card-3qT8mn_EacHdNUebd3SrYw",
+      "start_in_parent": 8706,
+      "parent_text_sha256": "5345a5ce8b50f94d9a9028030c4539086ec1450b76d0d5eabaa0592591f21b57",
+      "parent_source_url": "https://laws.moj.gov.sa/ar/legislation/PBbHmywh1XMp-Kyv3NtQLg",
+      "parent_metadata": {
+        "document_type": "نظام",
+        "source_family": "MOJ_legislation",
+        "capture_timestamp_utc": "2026-10-23T17:31:39.161567+00:00",
+        "source_reported_status_at_capture": "ساري",
+        "court_name": null,
+        "appeal_court_name": null,
+        "city": null,
+        "appeal_city": null
+      }
+    },
+    {
+      "configuration": "judgments",
+      "query": "التحكيم",
+      "matching_rows": 179,
+      "matching_parent_documents": 179,
+      "metadata_filtered_rows": 5797,
+      "total_configuration_rows": 14030,
+      "source_sequence": null,
+      "parent_title": "القضية رقم 439014012 لعام 1443هـ",
+      "matched_text": "التحكيم",
+      "passage": "ير الدائرة بعدم وجود مذكرة المدعى عليها بالنظام والمؤرخ في 09/09/1443ه ، وفي الجلسة المرئية في 09/10/1443هـ اكد وكيل المدعى عليها على دفعة السابق شرط التحكيم والذي دفع به في مذكرته بتاريخ 9/9/1443هـ المقدمة عن طريق النظام وبعرض ذلك على وكيل المدعي ذكر ان اول دفع قام به المدعى عليه كان بتاريخ 28/7/1443هـ وق",
+      "start_in_source_row": 15151,
+      "source_id": "0056f44d-a4c8-496d-a526-d6823f9e32c1",
+      "capture_timestamp_utc": "2026-10-24T08:28:54.317470Z",
+      "text_sha256": "085806df8878d99202f69c5985716d120350c0784c36504aeac560f981e78408",
+      "source_url": "https://laws.moj.gov.sa/ar/JudicialDecisionsList/1/7Rn08HAPxYpRR_kgFndyadfPahpOJjkFwp2LNZBTh5JHMDFD-3nAMF20m3aZJwPO"
+    }
+  ]
+}
+```
+
+These examples require only the public package and dataset. All 282 exported files and 30,042 streamed rows were checked anonymously. In the final bounded viewer check, the split and Parquet APIs identified this revision but six configurations were still pending; all six first-row endpoints returned HTTP 500 `ResponseNotReady`. No viewer sample rows were verified for this revision. The CLI supports `--open-source` to follow a citation, `--source-id` for one publication and capture-date filters. No private historical capture or model service is used.
+
+## RC39: earlier public snapshot · 3 November 2026 UTC
 
 The unchanged public example functions were executed on freshly and anonymously streamed dataset commit `dcde27b164f1ea7a1297def3bf82a181c5bcd573` during verification of all six complete configurations. This used the recorded options and the default 150-character context; it was a function-level check, not another direct CLI run. The earlier direct CLI outputs and later historical checkpoint comparisons remain below.
 
