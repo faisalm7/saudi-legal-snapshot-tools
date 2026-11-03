@@ -325,11 +325,18 @@ def _validate_historical_pdf_identity(row,components):
             or not page_list(component['complete_document_pages_inspected'])):
             raise ValueError('Historical PDF requires exact component pages and whole-document inspection')
         used.update(component_pages)
+    source_basis=corrections.get('native_component_source_basis')
+    if ('native_component_source_basis' in corrections
+        and (not combined or source_basis!='explicit_absolute_disjoint_native_segments_v1')):
+        raise ValueError('Unsupported historical native component source basis')
     if selection:
         _validate_historical_appeal_selection(row,components[0],corrections,page_list,whole)
         return
     if used & set(blank) or sorted(used | set(blank))!=whole:
         raise ValueError('Historical PDF requires exact component pages and whole-document inspection')
+    if source_basis=='explicit_absolute_disjoint_native_segments_v1':
+        _validate_historical_disjoint_native_derivations(row,components,corrections,page_list)
+        return
     if combined:
         derivations=corrections.get('active_component_body_derivations')
         natives=corrections.get('stored_native_body_components')
@@ -359,6 +366,89 @@ def _validate_historical_pdf_identity(row,components):
                 or d['source_pdf_pages']!=c.get('source_pdf_pages')):
                 raise ValueError('Combined historical PDF native/component derivation mismatch')
             previous_end=pair[1]
+
+
+def _validate_historical_disjoint_native_derivations(row,components,corrections,page_list):
+    """Check declared absolute source pieces without treating an envelope as raw text.
+
+    These are source-hash/review claims. Exact private native replay and external
+    projection decisions remain required; this does not authenticate source words.
+    """
+    def pair(value):
+        return (isinstance(value,list) and len(value)==2
+                and all(type(x) is int for x in value) and 0<=value[0]<value[1])
+    def digest(value):
+        return isinstance(value,str) and re.fullmatch('[0-9a-f]{64}',value) is not None
+    def fail():
+        raise ValueError('Disjoint historical PDF native/component derivation mismatch')
+    # The new form does not relabel the legacy contiguous-offset fields.
+    if ('stored_native_body_offsets' in corrections
+        or not digest(corrections.get('whole_native_sha256'))
+        or type(corrections.get('whole_native_characters')) is not int
+        or corrections['whole_native_characters']<1):
+        fail()
+    derivations=corrections.get('active_component_body_derivations')
+    natives=corrections.get('stored_native_body_components')
+    envelopes=corrections.get('stored_native_body_container_offsets')
+    segments=corrections.get('stored_native_body_segments')
+    coverage=corrections.get('native_full_source_coverage')
+    if (any(not isinstance(v,list) or len(v)!=2
+            for v in (derivations,natives,envelopes,segments))
+        or not isinstance(coverage,list) or not coverage):
+        fail()
+    selected={1:[],2:[]};piece_hashes={1:[],2:[]};cursor=0
+    for entry in coverage:
+        if (not isinstance(entry,dict)
+            or set(entry)!={'native_offsets','role','sha256','selected_component_index'}
+            or not pair(entry['native_offsets']) or entry['native_offsets'][0]!=cursor
+            or entry['native_offsets'][1]>corrections['whole_native_characters']
+            or not isinstance(entry['role'],str) or not entry['role'].strip()
+            or not digest(entry['sha256'])):
+            fail()
+        cursor=entry['native_offsets'][1]
+        index=entry['selected_component_index']
+        # Null explicitly declares an excluded nonjudicial source interval.
+        if index is not None:
+            if type(index) is not int or index not in selected:
+                fail()
+            selected[index].append(entry['native_offsets'])
+            piece_hashes[index].append(entry['sha256'])
+    if cursor!=corrections['whole_native_characters']:
+        fail()
+    previous_end=0;raw_characters=0;has_disjoint=False
+    for index,(component,derivation,native,envelope,parts) in enumerate(
+            zip(components,derivations,natives,envelopes,segments),1):
+        if (not isinstance(derivation,dict) or not isinstance(native,dict)
+            or 'native_offsets' in derivation
+            or {'source_native_start_char','source_native_end_char'} & set(native)
+            or not pair(envelope) or envelope[0]<previous_end
+            or not isinstance(parts,list) or not parts or not all(pair(p) for p in parts)
+            or envelope!=[parts[0][0],parts[-1][1]]
+            or any(a[1]>=b[0] for a,b in zip(parts,parts[1:]))
+            or parts!=selected[index]
+            or derivation.get('native_container_offsets')!=envelope
+            or native.get('native_container_offsets')!=envelope
+            or derivation.get('native_segments')!=parts
+            or native.get('native_segments')!=parts
+            or derivation.get('native_segment_sha256')!=piece_hashes[index]
+            or native.get('native_segment_sha256')!=piece_hashes[index]
+            or type(native.get('raw_body_characters')) is not int
+            or native['raw_body_characters']!=sum(b-a for a,b in parts)
+            or derivation.get('decision_level')!=component.get('decision_level')
+            or native.get('decision_level')!=component.get('decision_level')
+            or not digest(derivation.get('raw_body_sha256'))
+            or native.get('raw_body_sha256')!=derivation['raw_body_sha256']
+            or derivation.get('proposed_body_sha256')!=component.get('text_sha256')
+            or not pair(derivation.get('proposed_offsets'))
+            or derivation['proposed_offsets']!=[component.get('start_char'),component.get('end_char')]
+            or not page_list(derivation.get('source_pdf_pages'))
+            or derivation['source_pdf_pages']!=component.get('source_pdf_pages')):
+            fail()
+        has_disjoint=has_disjoint or len(parts)>1
+        raw_characters+=native['raw_body_characters'];previous_end=envelope[1]
+    if (not has_disjoint or type(corrections.get('selected_native_body_characters')) is not int
+        or corrections['selected_native_body_characters']!=raw_characters+2):
+        fail()
 
 
 def _validate_historical_appeal_selection(row,component,corrections,page_list,whole):

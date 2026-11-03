@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1
+
+- Support explicit absolute native-source segments for a combined historical judgment and appeal whose judicial text continues around publisher interface text. Bind selected pieces, full-source coverage, source/component hashes and ranges while preserving the existing contiguous-source checks.
+- Add entirely synthetic regression cases for this provenance form. Exact source comparisons and reviewed projection decisions remain necessary to establish content fidelity.
+
 ## 0.4.0
 
 - Complete the 38,011-file court native inventory and independently reviewed resumable court batches; preserve all pending/private records. Repair four BOE original-base parents from official images with separate version evidence.
