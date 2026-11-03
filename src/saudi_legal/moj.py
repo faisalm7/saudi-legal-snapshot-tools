@@ -195,6 +195,7 @@ def capture_case(response_file,source_url,captured_at,output):
 
 
 HISTORICAL_APPEAL_SELECTION_TYPE='commercial_court_historical_appeal_context_selection'
+JUDICIAL_HISTORICAL_APPEAL_SELECTION_TYPE='judicial_historical_appeal_context_selection'
 HISTORICAL_APPEAL_SELECTION_NOTICE=(
     'Only the complete appeal context is transcribed; the original PDF also contains '
     'a complete judgment context that is withheld. All original PDF pages were reviewed.')
@@ -210,7 +211,7 @@ def validate_case_components(row):
     verification of private PDF bytes. They never stand in for source HTML.
     """
     encoded=row.get('source_components_json')
-    if (row.get('document_type')==HISTORICAL_APPEAL_SELECTION_TYPE
+    if (row.get('document_type') in (HISTORICAL_APPEAL_SELECTION_TYPE,JUDICIAL_HISTORICAL_APPEAL_SELECTION_TYPE)
         and (not encoded or row.get('extraction_method')!=
              'official_historical_pdf_complete_visual_transcription_v1')):
         raise ValueError('Historical appeal selection requires its explicit PDF component evidence')
@@ -251,7 +252,7 @@ def validate_case_components(row):
 def _validate_historical_pdf_identity(row,components):
     """Check one complete first-instance, appeal-only, or combined PDF edition."""
     digest=row.get('source_pdf_sha256');pages=row.get('source_pdf_pages')
-    selection=row.get('document_type')==HISTORICAL_APPEAL_SELECTION_TYPE
+    selection=row.get('document_type') in (HISTORICAL_APPEAL_SELECTION_TYPE,JUDICIAL_HISTORICAL_APPEAL_SELECTION_TYPE)
     appeal=row.get('document_type')=='commercial_court_historical_appeal' or selection
     combined=row.get('document_type')=='commercial_court_historical_judgment_and_appeal'
     if (not isinstance(digest,str) or not re.fullmatch('[0-9a-f]{64}',digest)
@@ -260,7 +261,8 @@ def _validate_historical_pdf_identity(row,components):
     if (row.get('source_identity_kind')!='frozen_official_opaque_route_and_exact_historical_PDF_no_model_UUID'
         or row.get('source_capture_kind')!='historical_official_PDF_capture_date_unknown'
         or row.get('document_type') not in ('commercial_court_historical_judgment','commercial_court_historical_appeal',
-                'commercial_court_historical_judgment_and_appeal',HISTORICAL_APPEAL_SELECTION_TYPE)
+                'commercial_court_historical_judgment_and_appeal',HISTORICAL_APPEAL_SELECTION_TYPE,
+                JUDICIAL_HISTORICAL_APPEAL_SELECTION_TYPE)
         or row.get('source_family')!='moj_judgments'
         or row.get('capture_timestamp_utc') is not None or row.get('source_api_url') is not None
         or row.get('judgment_gregorian_date_raw') is not None or row.get('source_body_html_sha256') is not None):

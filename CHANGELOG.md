@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.2
+
+- Accept `judicial_historical_appeal_context_selection` for a complete selected appeal without inferring a commercial specialty. Preserve the legacy commercial selection type and the same strict source, native-range, page, observed-route and withheld-context checks.
+- Exercise both selection types with the same synthetic provenance and reviewed-export regression cases. Source fidelity and contextual privacy still require separate exact-version review.
+
 ## 0.5.1
 
 - Support explicit absolute native-source segments for a combined historical judgment and appeal whose judicial text continues around publisher interface text. Bind selected pieces, full-source coverage, source/component hashes and ranges while preserving the existing contiguous-source checks.

@@ -7,7 +7,7 @@ import pytest
 from saudi_legal.core import sha256
 from saudi_legal.moj import capture_supreme, decode_supreme_response, decode_case_response, html_body_text, validate_case_components
 from saudi_legal.core import canonical
-from saudi_legal.moj import (HISTORICAL_APPEAL_SELECTION_TYPE,
+from saudi_legal.moj import (HISTORICAL_APPEAL_SELECTION_TYPE,JUDICIAL_HISTORICAL_APPEAL_SELECTION_TYPE,
     HISTORICAL_APPEAL_SELECTION_NOTICE,HISTORICAL_APPEAL_SELECTION_FLAGS)
 
 
@@ -492,8 +492,9 @@ def test_combined_historical_pdf_cannot_hide_an_uninspected_or_false_blank_page(
     with pytest.raises(ValueError):validate_case_components(record)
 
 
-@pytest.fixture
-def historical_selected_appeal(historical_appeal_pdf_record):
+@pytest.fixture(params=[HISTORICAL_APPEAL_SELECTION_TYPE,JUDICIAL_HISTORICAL_APPEAL_SELECTION_TYPE],
+    ids=['legacy-commercial-selection','neutral-judicial-selection'])
+def historical_selected_appeal(historical_appeal_pdf_record,request):
     """Entirely invented two-context PDF; page2 genuinely belongs to both contexts."""
     r=historical_appeal_pdf_record
     c=json.loads(r['source_components_json'])[0]
@@ -512,7 +513,7 @@ def historical_selected_appeal(historical_appeal_pdf_record):
     gaps=[{'native_offsets':pair,'raw_sha256':sha256(native[pair[0]:pair[1]].encode()),
         'characters':pair[1]-pair[0],'kind':'publisher_portal_metadata_or_whitespace'}
         for pair in ([0,a],[b,d],[e,len(native)])]
-    r.update(document_type=HISTORICAL_APPEAL_SELECTION_TYPE,
+    r.update(document_type=request.param,
         source_url=r['source_url'].replace('/0/','/1/'),source_pdf_pages=3,
         source_version_notice=HISTORICAL_APPEAL_SELECTION_NOTICE,
         quality_flags=sorted(HISTORICAL_APPEAL_SELECTION_FLAGS),
@@ -531,6 +532,11 @@ def historical_selected_appeal(historical_appeal_pdf_record):
             'selected_proposed_body_sha256':r['text_sha256'],
             'selection_notice':HISTORICAL_APPEAL_SELECTION_NOTICE}},ensure_ascii=False)
     return r
+
+
+def test_selection_types_preserve_legacy_value_and_allow_neutral_judicial_label():
+    assert HISTORICAL_APPEAL_SELECTION_TYPE=='commercial_court_historical_appeal_context_selection'
+    assert JUDICIAL_HISTORICAL_APPEAL_SELECTION_TYPE=='judicial_historical_appeal_context_selection'
 
 
 def test_selected_complete_appeal_preserves_route1_and_real_mixed_page_coverage(historical_selected_appeal):
@@ -628,7 +634,7 @@ def test_prepare_selected_appeal_preserves_exact_reviewed_selection_provenance(t
     assert r==before and projection_sha256(actual)==digest
     for field in ('source_components_json','source_corrections_json','source_version_notice','source_url','text_ar'):
         assert actual[field]==r[field]
-    assert actual['document_type']==HISTORICAL_APPEAL_SELECTION_TYPE
+    assert actual['document_type']==r['document_type']
 
 
 def test_external_projection_registry_rejects_self_consistent_forged_original_provenance(tmp_path,historical_selected_appeal):
