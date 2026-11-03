@@ -315,3 +315,100 @@ Actual matching passages, parent metadata, offsets, hashes and official citation
   ]
 }
 ```
+
+## RC38: current public snapshot
+
+The unchanged example functions were executed during six complete anonymous streaming loads of commit `23c5a1bb3d81ab93e41ebbb75662c6ab3a999bc2`. This is a function-level streaming check; earlier direct CLI and RC36/RC37 outputs above remain unchanged. These commands use the recorded options:
+
+```bash
+python examples/texts.py --dataset Faisal73/saudi-legal-text-snapshots --revision 23c5a1bb3d81ab93e41ebbb75662c6ab3a999bc2 --config boe_article_spans --query 'مجلس الإدارة' --show-parent --limit 1
+python examples/texts.py --dataset Faisal73/saudi-legal-text-snapshots --revision 23c5a1bb3d81ab93e41ebbb75662c6ab3a999bc2 --config article_spans --query 'التعويض' --show-parent --limit 1
+python examples/texts.py --dataset Faisal73/saudi-legal-text-snapshots --revision 23c5a1bb3d81ab93e41ebbb75662c6ab3a999bc2 --config judgments --query 'التحكيم' --court 'التجارية' --city 'الرياض' --limit 1
+```
+
+| Configuration | Matches | Matching parents | After metadata filter | Entire configuration |
+| --- | ---: | ---: | ---: | ---: |
+| `boe_article_spans` | 232 | 54 | 9358 | 9358 |
+| `article_spans` | 126 | 23 | 4505 | 4505 |
+| `judgments` | 179 | 179 | 5789 | 14016 |
+
+Actual passages, parent offsets, hashes and official citations follow. Court results are parent-level text records; article rows link to a separate parent.
+
+```json
+{
+  "revision": "23c5a1bb3d81ab93e41ebbb75662c6ab3a999bc2",
+  "execution_method": "Existing public examples/texts.py functions applied to freshly anonymously streamed complete exact-revision dataset configurations during all6 verification, queries reuse the same required six-stream verification, with no separate example load or claimed direct CLI invocation.",
+  "example_code_sha256": "7c164ab5e724f9d42b14d6024c178429e0e35574f898a131d240dea25c1bcf09",
+  "examples": [
+    {
+      "configuration": "boe_article_spans",
+      "query": "مجلس الإدارة",
+      "court_filter": null,
+      "city_filter": null,
+      "matching_rows": 232,
+      "matching_parent_documents": 54,
+      "metadata_filtered_rows": 9358,
+      "total_configuration_rows": 9358,
+      "document_id": "sa-boe-0041fa37-4a6d-4b68-a9ab-a9a700f2e88f-ar-1be04a14b0543305",
+      "source_sequence": "المادة السادسة عشرة:",
+      "title": "تنظيم مؤسسة البريد السعودي",
+      "matched_text": "مجلس الإدارة",
+      "matching_passage": "المادة السادسة عشرة: ينشر هذا التنظيم في الجريدة الرسمية، ويعمل به بعد 180 يوما من تاريخ نشره، باستثناء الأحكام المتعلقة بتشكيل مجلس الإدارة واختصاصاته، فتعد نافذة من تاريخ نشره.",
+      "start_in_source_row": 128,
+      "start_in_parent": 10026,
+      "parent_passage": " يتعارض معه من أحكام. المادة السادسة عشرة: ينشر هذا التنظيم في الجريدة الرسمية، ويعمل به بعد 180 يوما من تاريخ نشره، باستثناء الأحكام المتعلقة بتشكيل مجلس الإدارة واختصاصاته، فتعد نافذة من تاريخ نشره.",
+      "source_id": "0041fa37-4a6d-4b68-a9ab-a9a700f2e88f",
+      "text_sha256": "db99890ae7a06d69764217e5aac54eeb374cd8eefd6e178039c98b9a5890fd8f",
+      "parent_text_sha256": "1be04a14b054330548e154daa039597d4cf8b6a927eefa80063527bc3a14a63f",
+      "capture_timestamp_utc": "2025-08-09T10:54:01.306341Z",
+      "source_url": "https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/0041fa37-4a6d-4b68-a9ab-a9a700f2e88f/1"
+    },
+    {
+      "configuration": "article_spans",
+      "query": "التعويض",
+      "court_filter": null,
+      "city_filter": null,
+      "matching_rows": 126,
+      "matching_parent_documents": 23,
+      "metadata_filtered_rows": 4505,
+      "total_configuration_rows": 4505,
+      "document_id": "moj-legislation:0927e0880ef0d812a4819a85b2af367eeddcdb0f97ef5bb3734759d35a4fff50",
+      "source_sequence": "المادة الحادية والأربعون",
+      "title": "نظام المعاملات المدنية",
+      "matched_text": "التَّعويض",
+      "matching_passage": "لك على أطراف التفاوض التزاماً بإبرام هذا العقد، ومع ذلك يكون من يتفاوض أو يُنهي التفاوض بسوء نية مسؤولاً عن الضرر الذي أصاب الطرف الآخر، ولا يشمل ذلك التَّعويض عمَّا فاته من كسب متوقع من العقد محل التفاوض.\n\n٢- يُعدُّ من سوء النية عدم الجدية في التفاوض، أو تعمد عدم الإدلاء ببيانٍ جوهريٍّ مؤثرٍ في العقد.",
+      "start_in_source_row": 188,
+      "start_in_parent": 8706,
+      "parent_passage": "لك على أطراف التفاوض التزاماً بإبرام هذا العقد، ومع ذلك يكون من يتفاوض أو يُنهي التفاوض بسوء نية مسؤولاً عن الضرر الذي أصاب الطرف الآخر، ولا يشمل ذلك التَّعويض عمَّا فاته من كسب متوقع من العقد محل التفاوض.\n\n٢- يُعدُّ من سوء النية عدم الجدية في التفاوض، أو تعمد عدم الإدلاء ببيانٍ جوهريٍّ مؤثرٍ في العقد.\n\nالما",
+      "source_id": "PBbHmywh1XMp-Kyv3NtQLg",
+      "text_sha256": "9e027b0671ca1ef6094fafcc5923b54ffd9d8cd4607cf67cd300fe778e7c3332",
+      "parent_text_sha256": "5345a5ce8b50f94d9a9028030c4539086ec1450b76d0d5eabaa0592591f21b57",
+      "capture_timestamp_utc": "2026-10-23T17:31:39.161567+00:00",
+      "source_url": "https://laws.moj.gov.sa/ar/legislation/PBbHmywh1XMp-Kyv3NtQLg#content-card-3qT8mn_EacHdNUebd3SrYw"
+    },
+    {
+      "configuration": "judgments",
+      "query": "التحكيم",
+      "court_filter": "التجارية",
+      "city_filter": "الرياض",
+      "matching_rows": 179,
+      "matching_parent_documents": 179,
+      "metadata_filtered_rows": 5789,
+      "total_configuration_rows": 14016,
+      "document_id": "sa-moj-0056f44d-a4c8-496d-a526-d6823f9e32c1-ar",
+      "source_sequence": null,
+      "title": "القضية رقم 439014012 لعام 1443هـ",
+      "matched_text": "التحكيم",
+      "matching_passage": "ير الدائرة بعدم وجود مذكرة المدعى عليها بالنظام والمؤرخ في 09/09/1443ه ، وفي الجلسة المرئية في 09/10/1443هـ اكد وكيل المدعى عليها على دفعة السابق شرط التحكيم والذي دفع به في مذكرته بتاريخ 9/9/1443هـ المقدمة عن طريق النظام وبعرض ذلك على وكيل المدعي ذكر ان اول دفع قام به المدعى عليه كان بتاريخ 28/7/1443هـ وق",
+      "start_in_source_row": 15151,
+      "start_in_parent": 15151,
+      "parent_passage": null,
+      "source_id": "0056f44d-a4c8-496d-a526-d6823f9e32c1",
+      "text_sha256": "085806df8878d99202f69c5985716d120350c0784c36504aeac560f981e78408",
+      "parent_text_sha256": "085806df8878d99202f69c5985716d120350c0784c36504aeac560f981e78408",
+      "capture_timestamp_utc": "2026-10-24T08:28:54.317470Z",
+      "source_url": "https://laws.moj.gov.sa/ar/JudicialDecisionsList/1/7Rn08HAPxYpRR_kgFndyadfPahpOJjkFwp2LNZBTh5JHMDFD-3nAMF20m3aZJwPO"
+    }
+  ]
+}
+```
