@@ -7,7 +7,7 @@
     "laws": 76,
     "article_spans": 4505,
     "source_sections": 1605,
-    "judgments": 14010
+    "judgments": 14013
   },
   "additions_since_v04": {
     "boe_documents": 11,
@@ -15,9 +15,9 @@
     "laws": 0,
     "article_spans": 0,
     "source_sections": 0,
-    "judgments": 13092
+    "judgments": 13095
   },
-  "source_publication_snapshot_rows": 14554,
+  "source_publication_snapshot_rows": 14557,
   "article_span_rows": 13863,
   "other_source_units": 1605,
   "source_publication_snapshot_rows_are_not_unique_laws_or_cases": true,
@@ -98,20 +98,20 @@
       "complete_flags_location": "quality_flags on each published parent record; all factual flags retained there"
     },
     "judgments": {
-      "publication_rows": 14010,
-      "distinct_document_ids": 14010,
-      "distinct_source_ids": 14010,
-      "distinct_official_source_urls": 14009,
-      "distinct_text_hashes": 14010,
-      "unknown_capture_dates": 207,
+      "publication_rows": 14013,
+      "distinct_document_ids": 14013,
+      "distinct_source_ids": 14013,
+      "distinct_official_source_urls": 14012,
+      "distinct_text_hashes": 14013,
+      "unknown_capture_dates": 209,
       "document_types": {
-        "judgment_publication_record": 10889,
+        "judgment_publication_record": 10890,
         "judgment_and_appeal_publication_record": 2369,
         "supreme_court_decision": 435,
         "appeal_publication_record": 103,
         "supreme_court_judgment": 5,
         "supreme_court_historical_judgment": 28,
-        "commercial_court_historical_judgment": 146,
+        "commercial_court_historical_judgment": 148,
         "commercial_court_historical_judgment_and_appeal": 30,
         "commercial_court_captured_pdf_judgment": 1,
         "supreme_court_judgment_current_pdf_transcription": 1,
@@ -140,8 +140,8 @@
         "source_amount_or_date_wording_inconsistency_retained": 101,
         "publisher_hearing_metadata_day_variation_retained": 67
       },
-      "distinct_quality_flags": 45942,
-      "quality_flag_occurrences": 59009,
+      "distinct_quality_flags": 45992,
+      "quality_flag_occurrences": 59059,
       "quality_flag_summary_limit": 20,
       "complete_flags_location": "quality_flags on each published parent record; all factual flags retained there"
     }
@@ -153,24 +153,24 @@
     "scope": "Source-evidenced exact spans; no claim every historical capture has all semantic article boundaries."
   },
   "court_structure": {
-    "publication_rows": 14010,
-    "populated_source_body_components": 16409,
-    "with_primary_judgment_body": 13904,
+    "publication_rows": 14013,
+    "populated_source_body_components": 16412,
+    "with_primary_judgment_body": 13907,
     "with_appeal_body": 2505,
     "source_capture_kinds": {
-      "official_API_response": 13801,
-      "historical_official_PDF_capture_date_unknown": 206,
+      "official_API_response": 13802,
+      "historical_official_PDF_capture_date_unknown": 208,
       "historical_official_PDF_separate_version_capture_date_unknown": 1,
       "captured_official_PDF_separate_version": 1,
       "current_official_PDF": 1
     },
-    "distinct_nonempty_judgment_number_labels": 13835,
+    "distinct_nonempty_judgment_number_labels": 13838,
     "distinct_nonempty_appeal_number_labels": 2485,
     "number_label_counts_are_not_verified_unique_cases": true
   },
   "public_artifacts": {
-    "parquet_files": 160,
-    "parquet_bytes": 111255469,
+    "parquet_files": 161,
+    "parquet_bytes": 111318226,
     "normative_annex_image_files": 96,
     "normative_annex_image_bytes": 12492928
   }
