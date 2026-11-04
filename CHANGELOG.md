@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.3
+
+- Support an explicitly declared complete unheaded appellate act within one originally stored native field, using the existing combined judgment-and-appeal type. Require all four absent appeal publication-header values to remain null; no header is inferred from body wording.
+- Bind the original field, two contiguous absolute native ranges, the literal two-line separator and complete source coverage. Existing known-header, disjoint-source and selected-appeal checks remain strict. These provenance checks do not establish source fidelity, privacy or publication rights.
+- Add 96 entirely synthetic regression cases for this opt-in representation and its rejection paths.
+
 ## 0.5.2
 
 - Accept `judicial_historical_appeal_context_selection` for a complete selected appeal without inferring a commercial specialty. Preserve the legacy commercial selection type and the same strict source, native-range, page, observed-route and withheld-context checks.

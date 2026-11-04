@@ -284,13 +284,24 @@ def _validate_historical_pdf_identity(row,components):
         or row.get('has_judgment') is not (not appeal)
         or row.get('has_appeal') is not (appeal or combined)):
         raise ValueError('Historical PDF needs the declared complete judicial components')
+    try:corrections=json.loads(row.get('source_corrections_json'))
+    except (TypeError,ValueError) as exc:raise ValueError('Historical PDF needs transcription provenance') from exc
+    unheaded=isinstance(corrections,dict) and 'unheaded_appellate_context' in corrections
+    if unheaded and (not combined or 'native_component_source_basis' in corrections):
+        raise ValueError('Unheaded appellate lineage requires the ordinary combined native path')
+    if unheaded and (any(k not in row or row[k] is not None for k in (
+            'appeal_number','appeal_hijri_date_raw','appeal_court_name','appeal_city'))
+        or row.get('appeal_gregorian_date_raw') is not None
+        or any(not isinstance(row.get(k),str) or not row[k].strip() for k in (
+            'judgment_number','judgment_hijri_date_raw','court_name','city'))):
+        raise ValueError('Unheaded appellate act needs explicit null appeal headers and active judgment metadata')
     if appeal:
         if (any(row.get(k) is not None for k in ('judgment_number','judgment_hijri_date_raw',
                 'judgment_gregorian_date_raw','court_name','city','appeal_gregorian_date_raw'))
             or any(not isinstance(row.get(k),str) or not row[k].strip() for k in (
                 'appeal_number','appeal_hijri_date_raw','appeal_court_name','appeal_city'))):
             raise ValueError('Historical appeal needs active appeal metadata and null inactive judgment metadata')
-    if combined and (row.get('appeal_gregorian_date_raw') is not None
+    if combined and not unheaded and (row.get('appeal_gregorian_date_raw') is not None
         or any(not isinstance(row.get(k),str) or not row[k].strip() for k in (
             'judgment_number','judgment_hijri_date_raw','court_name','city',
             'appeal_number','appeal_hijri_date_raw','appeal_court_name','appeal_city'))):
@@ -303,8 +314,6 @@ def _validate_historical_pdf_identity(row,components):
         if (component.get('decision_level')!=level
             or any(component.get(c)!=row.get(r) for c,r in metadata)):
             raise ValueError('Historical PDF component metadata mismatch')
-    try:corrections=json.loads(row.get('source_corrections_json'))
-    except (TypeError,ValueError) as exc:raise ValueError('Historical PDF needs transcription provenance') from exc
     if (not isinstance(corrections,dict) or corrections.get('source_pdf_sha256')!=digest
         or corrections.get('transcription_sha256')!=text_hash
         or not isinstance(row.get('native_body_text_sha256'),str)
@@ -368,6 +377,76 @@ def _validate_historical_pdf_identity(row,components):
                 or d['source_pdf_pages']!=c.get('source_pdf_pages')):
                 raise ValueError('Combined historical PDF native/component derivation mismatch')
             previous_end=pair[1]
+        if unheaded:
+            _validate_unheaded_appellate_native_lineage(row,components,corrections)
+
+
+def _validate_unheaded_appellate_native_lineage(row,components,corrections):
+    """Bind two contiguous acts to one original native field with absent appeal headers.
+
+    Absolute ranges and hashes are review claims, not authentication of source
+    words. Exact native replay and external quality/privacy/rights decisions
+    remain required. No unknown publication header is inferred from body text.
+    """
+    def pair(value):
+        return (isinstance(value,list) and len(value)==2
+                and all(type(x) is int for x in value) and 0<=value[0]<value[1])
+    def digest(value):
+        return isinstance(value,str) and re.fullmatch('[0-9a-f]{64}',value) is not None
+    def fail():
+        raise ValueError('Unheaded appellate original-field/native lineage mismatch')
+    evidence=corrections['unheaded_appellate_context']
+    fields=['appeal_number','appeal_hijri_date_raw','appeal_court_name','appeal_city']
+    if (not isinstance(evidence,dict)
+        or set(evidence)!={'kind','absent_header_fields','original_stored_fields','inter_act_separator'}
+        or evidence['kind']!='complete_unheaded_appellate_act_within_one_original_native_field_v1'
+        or evidence['absent_header_fields']!=fields
+        or any(k not in components[1] or components[1][k] is not None
+               for k in ('number','hijri_date_raw','court_name','city','gregorian_date_raw'))
+        or any(k in corrections for k in ('stored_native_body_segments','stored_native_body_container_offsets'))
+        or not digest(corrections.get('whole_native_sha256'))
+        or type(corrections.get('whole_native_characters')) is not int
+        or corrections['whole_native_characters']<1):
+        fail()
+    originals=evidence['original_stored_fields'];separator=evidence['inter_act_separator']
+    offsets=corrections['stored_native_body_offsets']
+    derivations=corrections['active_component_body_derivations']
+    if (not isinstance(originals,list) or len(originals)!=1 or not isinstance(originals[0],dict)
+        or set(originals[0])!={'stored_index','decision_level','native_offsets','raw_body_characters','raw_body_sha256'}
+        or type(originals[0]['stored_index']) is not int or originals[0]['stored_index']!=0
+        or originals[0]['decision_level']!='judgment'
+        or not pair(originals[0]['native_offsets'])
+        or originals[0]['native_offsets']!=[offsets[0][0],offsets[1][1]]
+        or type(originals[0]['raw_body_characters']) is not int
+        or originals[0]['raw_body_characters']!=offsets[1][1]-offsets[0][0]
+        or originals[0]['raw_body_sha256']!=row['native_body_text_sha256']
+        or not isinstance(separator,dict) or set(separator)!={'native_offsets','text','sha256'}
+        or not pair(separator['native_offsets'])
+        or separator['native_offsets']!=[offsets[0][1],offsets[1][0]]
+        or separator['native_offsets'][1]-separator['native_offsets'][0]!=2
+        or separator['text']!='\n\n' or separator['sha256']!=sha256(b'\n\n')):
+        fail()
+    # The five intervals cover the whole source without inventing a second
+    # originally stored field or placing nonjudicial content inside either act.
+    coverage=corrections.get('native_full_source_coverage')
+    expected=[([0,offsets[0][0]],'publisher_prefix',None),
+              (offsets[0],'judgment',1),(separator['native_offsets'],'inter_act_layout',None),
+              (offsets[1],'appeal',2),
+              ([offsets[1][1],corrections['whole_native_characters']],'terminal_layout',None)]
+    if not isinstance(coverage,list) or len(coverage)!=len(expected):
+        fail()
+    for entry,(span,role,index) in zip(coverage,expected):
+        if (not isinstance(entry,dict)
+            or set(entry)!={'native_offsets','role','sha256','selected_component_index'}
+            or not pair(entry['native_offsets']) or entry['native_offsets']!=span
+            or entry['role']!=role or entry['selected_component_index']!=index
+            or (index is not None and type(entry['selected_component_index']) is not int)
+            or not digest(entry['sha256'])):
+            fail()
+        if index is not None and entry['sha256']!=derivations[index-1]['raw_body_sha256']:
+            fail()
+        if role=='inter_act_layout' and entry['sha256']!=separator['sha256']:
+            fail()
 
 
 def _validate_historical_disjoint_native_derivations(row,components,corrections,page_list):
