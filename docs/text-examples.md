@@ -2,7 +2,168 @@
 
 Load real records, search Arabic passages, inspect their parent documents and follow official citations. No private corpus, model, paid API or account is required.
 
-## RC43: current public snapshot · 3 November 2026 UTC
+## RC50: current verified public data · 5 November 2026 UTC
+
+The unchanged public example functions were executed on freshly and anonymously streamed commit `877d3d17e37d54396b9553988723bbe150cc37d3` during verification of all six complete configurations. This used the recorded options and default 150-character context; it was a function-level check, not a direct CLI rerun. The commands below reproduce those options. A later dataset-card-only correction preserves the same data; these recorded outputs keep their actual execution revision. Earlier pinned CLI and checkpoint outputs remain below.
+
+```bash
+python examples/texts.py --dataset Faisal73/saudi-legal-text-snapshots --revision 877d3d17e37d54396b9553988723bbe150cc37d3 --config boe_article_spans --query 'مجلس الإدارة' --show-parent --limit 1
+python examples/texts.py --dataset Faisal73/saudi-legal-text-snapshots --revision 877d3d17e37d54396b9553988723bbe150cc37d3 --config article_spans --query 'التعويض' --show-parent --limit 1
+python examples/texts.py --dataset Faisal73/saudi-legal-text-snapshots --revision 877d3d17e37d54396b9553988723bbe150cc37d3 --config judgments --query 'التحكيم' --court 'التجارية' --city 'الرياض' --limit 1
+```
+
+| Configuration | Matches | Matching parents | After metadata filter | Entire configuration |
+| --- | ---: | ---: | ---: | ---: |
+| `boe_article_spans` | 232 | 54 | 9,358 | 9,358 |
+| `article_spans` | 126 | 23 | 4,505 | 4,505 |
+| `judgments` | 181 | 181 | 5,820 | 14,077 |
+
+The actual outputs follow. Fixed passage windows can start inside a word; inspect the complete parent for context. Parent offsets and hashes bind articles to stored parents. Court results are complete parent-level contexts. Capture dates do not establish legal force, and a text match does not establish an outcome.
+
+```json
+{
+  "revision": "877d3d17e37d54396b9553988723bbe150cc37d3",
+  "toolkit_code_commit": "8261fe261bd24c4f85f36a0e886aeb56671ad777",
+  "execution_method": "Existing public examples/texts.py functions applied to freshly anonymously streamed complete exact-revision dataset configurations during all6 verification, queries reuse the same required six-stream verification, with no separate example load or claimed direct CLI invocation.",
+  "example_code_sha256": "7c164ab5e724f9d42b14d6024c178429e0e35574f898a131d240dea25c1bcf09",
+  "context_chars": 150,
+  "examples": [
+    {
+      "dataset_id": "Faisal73/saudi-legal-text-snapshots",
+      "revision": "877d3d17e37d54396b9553988723bbe150cc37d3",
+      "configuration": "boe_article_spans",
+      "split": "corpus",
+      "query": "مجلس الإدارة",
+      "court_filter": null,
+      "city_filter": null,
+      "matching_rows": 232,
+      "matching_parent_documents": 54,
+      "metadata_filtered_rows": 9358,
+      "total_configuration_rows": 9358,
+      "actual_first_result": {
+        "document_id": "sa-boe-0041fa37-4a6d-4b68-a9ab-a9a700f2e88f-ar-1be04a14b0543305",
+        "title": null,
+        "source_sequence": "المادة السادسة عشرة:",
+        "source_id": "0041fa37-4a6d-4b68-a9ab-a9a700f2e88f",
+        "capture_timestamp_utc": "2025-08-09T10:54:01.306341Z",
+        "text_sha256": "db99890ae7a06d69764217e5aac54eeb374cd8eefd6e178039c98b9a5890fd8f",
+        "match": {
+          "start_char": 128,
+          "end_char": 140,
+          "matched_text": "مجلس الإدارة",
+          "before": "المادة السادسة عشرة: ينشر هذا التنظيم في الجريدة الرسمية، ويعمل به بعد 180 يوما من تاريخ نشره، باستثناء الأحكام المتعلقة بتشكيل ",
+          "after": " واختصاصاته، فتعد نافذة من تاريخ نشره.",
+          "passage": "المادة السادسة عشرة: ينشر هذا التنظيم في الجريدة الرسمية، ويعمل به بعد 180 يوما من تاريخ نشره، باستثناء الأحكام المتعلقة بتشكيل مجلس الإدارة واختصاصاته، فتعد نافذة من تاريخ نشره."
+        },
+        "parent": {
+          "document_id": "sa-boe-0041fa37-4a6d-4b68-a9ab-a9a700f2e88f-ar-1be04a14b0543305",
+          "title": "تنظيم مؤسسة البريد السعودي",
+          "source_url": "https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/0041fa37-4a6d-4b68-a9ab-a9a700f2e88f/1",
+          "text_sha256": "1be04a14b054330548e154daa039597d4cf8b6a927eefa80063527bc3a14a63f",
+          "matched_start_in_parent": 10026,
+          "passage": " يتعارض معه من أحكام. المادة السادسة عشرة: ينشر هذا التنظيم في الجريدة الرسمية، ويعمل به بعد 180 يوما من تاريخ نشره، باستثناء الأحكام المتعلقة بتشكيل مجلس الإدارة واختصاصاته، فتعد نافذة من تاريخ نشره.",
+          "metadata": {
+            "document_type": "official_legal_instrument",
+            "source_family": "boe",
+            "capture_timestamp_utc": "2025-08-09T10:54:01.306341Z",
+            "source_reported_status_at_capture": "ساري",
+            "court_name": null,
+            "appeal_court_name": null,
+            "city": null,
+            "appeal_city": null
+          }
+        },
+        "source_url": "https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/0041fa37-4a6d-4b68-a9ab-a9a700f2e88f/1"
+      }
+    },
+    {
+      "dataset_id": "Faisal73/saudi-legal-text-snapshots",
+      "revision": "877d3d17e37d54396b9553988723bbe150cc37d3",
+      "configuration": "article_spans",
+      "split": "corpus",
+      "query": "التعويض",
+      "court_filter": null,
+      "city_filter": null,
+      "matching_rows": 126,
+      "matching_parent_documents": 23,
+      "metadata_filtered_rows": 4505,
+      "total_configuration_rows": 4505,
+      "actual_first_result": {
+        "document_id": "moj-legislation:0927e0880ef0d812a4819a85b2af367eeddcdb0f97ef5bb3734759d35a4fff50",
+        "title": null,
+        "source_sequence": "المادة الحادية والأربعون",
+        "source_id": "PBbHmywh1XMp-Kyv3NtQLg",
+        "capture_timestamp_utc": "2026-10-23T17:31:39.161567+00:00",
+        "text_sha256": "9e027b0671ca1ef6094fafcc5923b54ffd9d8cd4607cf67cd300fe778e7c3332",
+        "match": {
+          "start_char": 188,
+          "end_char": 197,
+          "matched_text": "التَّعويض",
+          "before": "لك على أطراف التفاوض التزاماً بإبرام هذا العقد، ومع ذلك يكون من يتفاوض أو يُنهي التفاوض بسوء نية مسؤولاً عن الضرر الذي أصاب الطرف الآخر، ولا يشمل ذلك ",
+          "after": " عمَّا فاته من كسب متوقع من العقد محل التفاوض.\n\n٢- يُعدُّ من سوء النية عدم الجدية في التفاوض، أو تعمد عدم الإدلاء ببيانٍ جوهريٍّ مؤثرٍ في العقد.",
+          "passage": "لك على أطراف التفاوض التزاماً بإبرام هذا العقد، ومع ذلك يكون من يتفاوض أو يُنهي التفاوض بسوء نية مسؤولاً عن الضرر الذي أصاب الطرف الآخر، ولا يشمل ذلك التَّعويض عمَّا فاته من كسب متوقع من العقد محل التفاوض.\n\n٢- يُعدُّ من سوء النية عدم الجدية في التفاوض، أو تعمد عدم الإدلاء ببيانٍ جوهريٍّ مؤثرٍ في العقد."
+        },
+        "parent": {
+          "document_id": "moj-legislation:0927e0880ef0d812a4819a85b2af367eeddcdb0f97ef5bb3734759d35a4fff50",
+          "title": "نظام المعاملات المدنية",
+          "source_url": "https://laws.moj.gov.sa/ar/legislation/PBbHmywh1XMp-Kyv3NtQLg",
+          "text_sha256": "5345a5ce8b50f94d9a9028030c4539086ec1450b76d0d5eabaa0592591f21b57",
+          "matched_start_in_parent": 8706,
+          "passage": "لك على أطراف التفاوض التزاماً بإبرام هذا العقد، ومع ذلك يكون من يتفاوض أو يُنهي التفاوض بسوء نية مسؤولاً عن الضرر الذي أصاب الطرف الآخر، ولا يشمل ذلك التَّعويض عمَّا فاته من كسب متوقع من العقد محل التفاوض.\n\n٢- يُعدُّ من سوء النية عدم الجدية في التفاوض، أو تعمد عدم الإدلاء ببيانٍ جوهريٍّ مؤثرٍ في العقد.\n\nالما",
+          "metadata": {
+            "document_type": "نظام",
+            "source_family": "MOJ_legislation",
+            "capture_timestamp_utc": "2026-10-23T17:31:39.161567+00:00",
+            "source_reported_status_at_capture": "ساري",
+            "court_name": null,
+            "appeal_court_name": null,
+            "city": null,
+            "appeal_city": null
+          }
+        },
+        "source_url": "https://laws.moj.gov.sa/ar/legislation/PBbHmywh1XMp-Kyv3NtQLg#content-card-3qT8mn_EacHdNUebd3SrYw"
+      }
+    },
+    {
+      "dataset_id": "Faisal73/saudi-legal-text-snapshots",
+      "revision": "877d3d17e37d54396b9553988723bbe150cc37d3",
+      "configuration": "judgments",
+      "split": "corpus",
+      "query": "التحكيم",
+      "court_filter": "التجارية",
+      "city_filter": "الرياض",
+      "matching_rows": 181,
+      "matching_parent_documents": 181,
+      "metadata_filtered_rows": 5820,
+      "total_configuration_rows": 14077,
+      "actual_first_result": {
+        "document_id": "sa-moj-0056f44d-a4c8-496d-a526-d6823f9e32c1-ar",
+        "title": "القضية رقم 439014012 لعام 1443هـ",
+        "source_sequence": null,
+        "source_id": "0056f44d-a4c8-496d-a526-d6823f9e32c1",
+        "capture_timestamp_utc": "2026-10-24T08:28:54.317470Z",
+        "text_sha256": "085806df8878d99202f69c5985716d120350c0784c36504aeac560f981e78408",
+        "match": {
+          "start_char": 15151,
+          "end_char": 15158,
+          "matched_text": "التحكيم",
+          "before": "ير الدائرة بعدم وجود مذكرة المدعى عليها بالنظام والمؤرخ في 09/09/1443ه ، وفي الجلسة المرئية في 09/10/1443هـ اكد وكيل المدعى عليها على دفعة السابق شرط ",
+          "after": " والذي دفع به في مذكرته بتاريخ 9/9/1443هـ المقدمة عن طريق النظام وبعرض ذلك على وكيل المدعي ذكر ان اول دفع قام به المدعى عليه كان بتاريخ 28/7/1443هـ وق",
+          "passage": "ير الدائرة بعدم وجود مذكرة المدعى عليها بالنظام والمؤرخ في 09/09/1443ه ، وفي الجلسة المرئية في 09/10/1443هـ اكد وكيل المدعى عليها على دفعة السابق شرط التحكيم والذي دفع به في مذكرته بتاريخ 9/9/1443هـ المقدمة عن طريق النظام وبعرض ذلك على وكيل المدعي ذكر ان اول دفع قام به المدعى عليه كان بتاريخ 28/7/1443هـ وق"
+        },
+        "parent": null,
+        "source_url": "https://laws.moj.gov.sa/ar/JudicialDecisionsList/1/7Rn08HAPxYpRR_kgFndyadfPahpOJjkFwp2LNZBTh5JHMDFD-3nAMF20m3aZJwPO"
+      }
+    }
+  ],
+  "no_private_inputs": true,
+  "no_paid_API_or_code_change": true
+}
+```
+
+These examples require only the public package and dataset. All 292 exported files, 175 Parquets and 30,089 streamed rows were checked anonymously at this revision. One bounded viewer round returned HTTP 200 split/Parquet indexes listing all six configurations pending and zero failed, with no ready rows; all six first-row endpoints returned HTTP 500 `ResponseNotReady`. No viewer sample rows were verified and no polling followed. Direct downloads and complete loading passed. Use `--open-source` to follow a citation or `--source-id` to inspect one publication. No private capture or model service is required.
+
+## RC43: earlier public snapshot · 3 November 2026 UTC
 
 The unchanged public example functions were executed on freshly and anonymously streamed commit `fac6f65a57b69392d844454d3fe6dd968f6433d7` during verification of all six complete configurations. This used the recorded options and default 150-character context; it was a function-level check, not a direct CLI rerun. Earlier pinned CLI and checkpoint outputs remain below.
 

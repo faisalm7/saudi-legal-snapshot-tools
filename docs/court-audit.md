@@ -1,6 +1,8 @@
 # Court processing and publication · v0.5.0
 
-The current candidate contains **8,764 court publication records and 9,006 populated source body components**, an addition of 7,846 publication records since v0.4.0. [Coverage](coverage.json) is computed from the actual Parquet files; the [review summary](review-summary-v0.5.0.json) separates completed contexts, specific holds and duplicate publications. Remaining frozen queues are still in progress, not rejected.
+The public dataset contains **14,077 reviewed court-text contexts from 14,076 court-publication parents and 16,507 populated source body components**. These data were anonymously verified at commit `877d3d17e37d54396b9553988723bbe150cc37d3` on 5 November 2026 UTC; the later documentation-only commit `13ce24c48786bfb39582c8a743a540522dc02d1a` preserves those data bytes. [Current coverage](https://huggingface.co/datasets/Faisal73/saudi-legal-text-snapshots/blob/13ce24c48786bfb39582c8a743a540522dc02d1a/coverage.json) records the published artifacts. Frozen work still awaiting review remains pending, not rejected.
+
+**Historical candidate note (earlier v0.5.0 checkpoint):** The current candidate contains **8,764 court publication records and 9,006 populated source body components**, an addition of 7,846 publication records since v0.4.0. [Coverage](coverage.json) is computed from the actual Parquet files; the [review summary](review-summary-v0.5.0.json) separates completed contexts, specific holds and duplicate publications. Remaining frozen queues are still in progress, not rejected.
 
 ## Preserved v0.4.0 inventory and review evidence
 
